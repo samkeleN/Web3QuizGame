@@ -1,127 +1,139 @@
 """
-Reporter module for the AI Project Analyzer.
+Serverless Reporter module for the AI Project Analyzer.
 
-This module handles saving analysis reports to files in various formats.
+Modified to work without filesystem operations for Vercel deployment.
+Returns report content as strings/dicts instead of writing files.
 """
 
 import logging
-import os
-from typing import Dict, Any, Union
 from datetime import datetime
 import re
+from typing import Dict, Any, Union, Tuple
+import json
 
 logger = logging.getLogger(__name__)
 
-# Supported report formats
-REPORT_FORMATS = ["md", "json", "html", "csv"]
+def calculate_average_scores(analyses: Dict) -> Dict[str, float]:
+    """Helper to calculate average scores across all repos"""
+    score_sums = {}
+    score_counts = {}
+    
+    for repo_data in analyses.values():
+        scores = repo_data.get('json', {}).get('scores', {})
+        for k, v in scores.items():
+            if isinstance(v, (int, float)):
+                score_sums[k] = score_sums.get(k, 0) + v
+                score_counts[k] = score_counts.get(k, 0) + 1
+    
+    return {k: score_sums[k]/score_counts[k] 
+            for k in score_sums if score_counts.get(k, 0) > 0}
 
-
-def ensure_directory_exists(directory: str) -> None:
+def generate_report_content(repo_name: str, analysis: Union[str, Dict]) -> Tuple[str, str]:
     """
-    Ensure that the directory exists, create it if it doesn't.
-
+    Generate markdown and JSON report content (no file operations).
+    
     Args:
-        directory: Directory path to check/create
-    """
-    os.makedirs(directory, exist_ok=True)
-    logger.debug(f"Ensured directory exists: {directory}")
-
-
-def generate_report_directory(base_output_dir: str) -> str:
-    """
-    Generate a timestamped directory for reports.
-
-    Args:
-        base_output_dir: Base directory for reports
-
+        repo_name: Name of repository
+        analysis: Analysis content (markdown string or dict)
+        
     Returns:
-        str: Path to the timestamped directory
+        tuple: (markdown_content, json_content)
     """
-    # Create timestamp-based directory
-    timestamp = datetime.now().strftime("%m-%d-%Y-%H%M")
-    report_dir = os.path.join(base_output_dir, timestamp)
-
-    # Ensure the directory exists
-    ensure_directory_exists(report_dir)
-
-    return report_dir
-
-
-def generate_filename(repo_name: str) -> str:
-    """
-    Generate a filename for the report.
-
-    Args:
-        repo_name: Name of the repository
-
-    Returns:
-        str: Generated filename
-    """
-    # Replace slashes with hyphens for file safety
-    safe_name = repo_name.replace("/", "-")
-
-    return f"{safe_name}-analysis.md"
-
-
-def save_report(repo_name: str, analysis, output_dir: str) -> str:
-    """
-    Save an individual analysis report to a file.
-
-    Args:
-        repo_name: Name of the repository
-        analysis: Analysis report content (string or dictionary)
-        output_dir: Directory to save the report
-
-    Returns:
-        str: Path to the saved report file
-    """
-    # Ensure the output directory exists
-    ensure_directory_exists(output_dir)
-
-    # Determine if we're dealing with JSON or Markdown
-    is_json = isinstance(analysis, dict)
-
-    # Generate filename with appropriate extension
-    file_ext = "json" if is_json else "md"
-    base_filename = generate_filename(repo_name)
-    filename = f"{os.path.splitext(base_filename)[0]}.{file_ext}"
-
-    # Full path to the report file
-    report_path = os.path.join(output_dir, filename)
-
-    # Save the report based on its type
-    if is_json:
-        # Add metadata to JSON
-        analysis_with_metadata = {
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    if isinstance(analysis, dict):
+        # JSON report
+        json_content = {
             "repository": repo_name,
-            "generated_at": datetime.now().isoformat(),
-            "analysis": analysis,
+            "generated_at": timestamp,
+            "analysis": analysis
         }
-
-        # Save as JSON
-        with open(report_path, "w", encoding="utf-8") as f:
-            import json
-
-            json.dump(analysis_with_metadata, f, indent=2)
+        markdown_content = convert_json_to_markdown(json_content)
     else:
-        # For markdown, add header with repository name and timestamp
-        header = f"# Analysis Report: {repo_name}\n\n"
-        header += f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
-
-        # Handle error messages specially
-        if isinstance(analysis, str) and analysis.startswith("Error:"):
-            header += f"\n## Error\n\n{analysis}\n"
-            content = header
+        # Markdown report
+        markdown_content = f"# Analysis Report: {repo_name}\n\n"
+        markdown_content += f"Generated: {timestamp}\n\n"
+        
+        if analysis.startswith("Error:"):
+            markdown_content += f"## Error\n\n{analysis}\n"
         else:
-            content = header + analysis
+            markdown_content += analysis
+            
+        json_content = convert_markdown_to_json(markdown_content)
+    
+    return markdown_content, json.dumps(json_content, indent=2)
 
-        # Save as Markdown
-        with open(report_path, "w", encoding="utf-8") as f:
-            f.write(content)
+def convert_json_to_markdown(json_data: Dict) -> str:
+    """Convert JSON analysis to markdown format."""
+    content = f"# {json_data['repository']} Analysis\n\n"
+    content += f"**Generated:** {json_data['generated_at']}\n\n"
+    
+    for category, data in json_data['analysis'].items():
+        content += f"## {category.title()}\n"
+        if isinstance(data, dict):
+            for k, v in data.items():
+                content += f"- **{k}:** {v}\n"
+        else:
+            content += f"{data}\n"
+        content += "\n"
+    
+    return content
 
-    logger.info(f"Saved report to {report_path}")
-    return report_path
+def convert_markdown_to_json(markdown: str) -> Dict:
+    """Convert markdown analysis to structured JSON."""
+    try:
+        return {
+            "content": markdown,
+            "scores": extract_scores_from_markdown(markdown),
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Markdown to JSON conversion failed: {str(e)}")
+        return {"error": str(e)}
 
+def generate_summary_content(
+    analyses: Dict[str, Dict[str, Union[str, Dict]]],
+    total_repos: int,
+    completed_repos: int
+) -> str:
+    """
+    Generate summary markdown content from all analyses.
+    
+    Args:
+        analyses: Dict of {repo_name: {markdown: str, json: str}}
+        total_repos: Total repositories to process
+        completed_repos: Number completed
+        
+    Returns:
+        str: Markdown summary content
+    """
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    content = f"# Analysis Summary Report\n\nGenerated: {timestamp}\n\n"
+    
+    # Progress bar (ASCII-only for compatibility)
+    progress = int((completed_repos / total_repos) * 20) if total_repos > 0 else 0
+    progress_bar = f"[{'#' * progress}{'-' * (20 - progress)}]"
+    content += f"## Progress: {completed_repos}/{total_repos} Repositories\n{progress_bar}\n\n"
+    
+    # Score summary table
+    content += "## Score Summary\n\n"
+    content += "| Repository | Security | Functionality | Readability | Overall |\n"
+    content += "|------------|----------|---------------|-------------|---------|\n"
+    try:
+        for repo_name, data in analyses.items():
+            scores = data.get('json', {}).get('scores', {})
+            content += f"| {repo_name} | {scores.get('security', 'N/A')} | "
+            content += f"{scores.get('functionality', 'N/A')} | "
+            content += f"{scores.get('readability', 'N/A')} | "
+            content += f"{scores.get('overall', 'N/A')} |\n"
+        if analyses:
+            avg_scores = calculate_average_scores(analyses)
+            content += "\n## Average Scores\n"
+            for k, v in avg_scores.items():
+                content += f"- **{k}**: {v:.1f}/10\n"
+        return content
+    except Exception as e:
+        return f"# Summary Generation Failed\n\n{str(e)}"
 
 def extract_scores_from_markdown(markdown_content: str) -> Dict[str, float]:
     """
@@ -253,249 +265,43 @@ def extract_scores_from_markdown(markdown_content: str) -> Dict[str, float]:
     logger.debug(f"Final extracted scores: {scores}")
     return scores
 
-
-def update_summary_report(
-    analyses: Dict[str, Union[str, Dict[str, Any]]],
-    output_dir: str,
-    total_repos: int,
-    repos_completed: int,
-) -> str:
-    """
-    Create or update a summary report of analyzed repositories, showing progress.
-
-    Args:
-        analyses: Dictionary mapping repository names to their analysis results
-        output_dir: Directory to save the summary report
-        total_repos: Total number of repositories to be analyzed
-        repos_completed: Number of repositories that have been completed
-
-    Returns:
-        str: Path to the summary report file
-    """
-    # Ensure the output directory exists
-    ensure_directory_exists(output_dir)
-
-    # Create filename
-    summary_path = os.path.join(output_dir, "summary-report.md")
-
-    # Extract scores from each analysis
-    all_scores = {}
-
-    for repo_name, analysis in analyses.items():
-        if isinstance(analysis, dict):
-            # Handle JSON format
-            if "analysis" in analysis and isinstance(analysis["analysis"], dict):
-                scores = {}
-                # Extract scores from structured data
-                for category in ["readability", "standards", "complexity", "testing", "overall"]:
-                    if category in analysis["analysis"]:
-                        score_data = analysis["analysis"][category]
-                        if isinstance(score_data, dict) and "score" in score_data:
-                            scores[category] = score_data["score"]
-                all_scores[repo_name] = scores
-        elif isinstance(analysis, str):
-            # Handle markdown format
-            scores = extract_scores_from_markdown(analysis)
-            if scores:
-                all_scores[repo_name] = scores
-
-    # Generate markdown summary
-    summary_content = "# Analysis Summary Report\n\n"
-    summary_content += f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
-
-    # Show progress information with visual progress bar
-    progress_percentage = (repos_completed / total_repos) * 100 if total_repos > 0 else 0
-    bar_length = 30
-    filled_length = int(bar_length * repos_completed // total_repos)
-    progress_bar = "█" * filled_length + "░" * (bar_length - filled_length)
-
-    summary_content += f"## Progress: {repos_completed}/{total_repos} Repositories Analyzed ({progress_percentage:.1f}%)\n"
-    summary_content += f"```\n[{progress_bar}]\n```\n\n"
-
-    # Add status with timestamps
-    summary_content += f"- Analysis started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
-    if repos_completed == total_repos:
-        summary_content += f"- Analysis completed: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
-    else:
-        summary_content += (
-            f"- Analysis in progress: {repos_completed} of {total_repos} repositories analyzed\n"
-        )
-    summary_content += "\n"
-
-    # Add score table
-    summary_content += "## Score Summary\n\n"
-    summary_content += "| Repository | Security | Functionality | Readability | Dependencies | Evidence | Overall |\n"
-    summary_content += "|------------|----------|--------------|-------------|--------------|----------|----------|\n"
-
-    for repo_name, scores in all_scores.items():
-        # Format scores to show on 0-10 scale with one decimal place
-        security = (
-            f"{scores.get('security', 'N/A')}/10" if scores.get("security") != "N/A" else "N/A"
-        )
-        functionality = (
-            f"{scores.get('functionality', 'N/A')}/10"
-            if scores.get("functionality") != "N/A"
-            else "N/A"
-        )
-        readability = (
-            f"{scores.get('readability', 'N/A')}/10"
-            if scores.get("readability") != "N/A"
-            else "N/A"
-        )
-        dependencies = (
-            f"{scores.get('dependencies', 'N/A')}/10"
-            if scores.get("dependencies") != "N/A"
-            else "N/A"
-        )
-        evidence = (
-            f"{scores.get('evidence', 'N/A')}/10" if scores.get("evidence") != "N/A" else "N/A"
-        )
-        overall = f"{scores.get('overall', 'N/A')}/10" if scores.get("overall") != "N/A" else "N/A"
-
-        summary_content += f"| {repo_name} | {security} | {functionality} | {readability} | {dependencies} | {evidence} | {overall} |\n"
-
-    # Add average scores if we have data
-    if all_scores:
-        summary_content += "\n## Average Scores\n\n"
-        categories = [
-            "security",
-            "functionality",
-            "readability",
-            "dependencies",
-            "evidence",
-            "overall",
-        ]
-
-        for category in categories:
-            scores = [
-                repo_scores.get(category, 0)
-                for repo_scores in all_scores.values()
-                if isinstance(repo_scores.get(category, 0), (int, float))
-            ]
-
-            if scores:
-                avg_score = sum(scores) / len(scores)
-                summary_content += f"- **{category.title()}**: {avg_score:.1f}/10\n"
-
-    # List completed reports
-    summary_content += "\n## Individual Reports\n\n"
-    for repo_name in analyses.keys():
-        safe_name = repo_name.replace("/", "-")
-        report_name = f"{safe_name}-analysis.md"
-        summary_content += f"- [{repo_name}](./{report_name})\n"
-
-    # Add pending repositories if not all are completed
-    if repos_completed < total_repos:
-        summary_content += "\n## Pending Repositories\n\n"
-        summary_content += (
-            f"There are {total_repos - repos_completed} repositories pending analysis.\n"
-        )
-
-    # Save summary
-    with open(summary_path, "w", encoding="utf-8") as f:
-        f.write(summary_content)
-
-    logger.info(f"Updated summary report at {summary_path}")
-    return summary_path
-
-
-def create_summary_report(analyses: Dict[str, Union[str, Dict[str, Any]]], output_dir: str) -> str:
-    """
-    Create a summary report of all analyzed repositories.
-
-    Args:
-        analyses: Dictionary mapping repository names to their analysis results
-        output_dir: Directory to save the summary report
-
-    Returns:
-        str: Path to the summary report file
-    """
-    # Call the updated function with completed = total
-    return update_summary_report(analyses, output_dir, len(analyses), len(analyses))
-
-
 def save_single_report(
     repo_name: str,
-    analysis: Union[str, Dict[str, Any]],
-    report_dir: str,
+    analysis: Union[str, Dict],
+    current_analyses: Dict,
     total_repos: int,
-    completed_repos: int,
-    current_analyses: Dict[str, Union[str, Dict[str, Any]]] = None,
-) -> Dict[str, str]:
+    completed_repos: int
+) -> Dict:
     """
-    Save a single repository analysis report and update the summary.
-
-    Args:
-        repo_name: Name of the repository
-        analysis: Analysis result for the repository
-        report_dir: Directory to save the report
-        total_repos: Total number of repositories to be analyzed
-        completed_repos: Number of repositories completed including this one
-        current_analyses: Current collection of analyses to include in summary
-
+    Generate report content without filesystem operations.
+    
     Returns:
-        Dict[str, str]: Dictionary mapping repository names to their report file paths
+        {
+            repo_name: {
+                'markdown': str,
+                'json': str
+            },
+            '__summary__': str
+        }
     """
-    results = {}
-
-    # Save the individual report
-    try:
-        report_path = save_report(repo_name, analysis, report_dir)
-        results[repo_name] = report_path
-
-        # Update the analyses dict for the summary
-        if current_analyses is None:
-            current_analyses = {}
-        current_analyses[repo_name] = analysis
-
-        # Update the summary report
-        try:
-            summary_path = update_summary_report(
-                current_analyses, report_dir, total_repos, completed_repos
-            )
-            results["__summary__"] = summary_path
-        except Exception as e:
-            logger.error(f"Error updating summary report: {str(e)}")
-
-    except Exception as e:
-        logger.error(f"Error saving report for {repo_name}: {str(e)}")
-
-    return results
-
-
-def save_reports(
-    analyses: Dict[str, Union[str, Dict[str, Any]]], base_output_dir: str
-) -> Dict[str, str]:
-    """
-    Save multiple analysis reports to files and generate summary.
-
-    Args:
-        analyses: Dictionary mapping repository names to their analysis results
-        base_output_dir: Base directory for saving reports
-
-    Returns:
-        Dict[str, str]: Dictionary mapping repository names to their report file paths
-    """
-    results = {}
-
-    # Create timestamped directory for this batch of reports
-    report_dir = generate_report_directory(base_output_dir)
-    logger.info(f"Saving reports to directory: {report_dir}")
-
-    # Save individual reports
-    for repo_name, analysis in analyses.items():
-        try:
-            report_path = save_report(repo_name, analysis, report_dir)
-            results[repo_name] = report_path
-        except Exception as e:
-            logger.error(f"Error saving report for {repo_name}: {str(e)}")
-
-    # Generate summary report if we have more than one analysis
-    if len(analyses) > 1:
-        try:
-            summary_path = create_summary_report(analyses, report_dir)
-            results["__summary__"] = summary_path
-        except Exception as e:
-            logger.error(f"Error creating summary report: {str(e)}")
-
+    markdown, json_content = generate_report_content(repo_name, analysis)
+    
+    results = {
+        repo_name: {
+            'markdown': markdown,
+            'json': json_content
+        }
+    }
+    
+    # Update analyses collection
+    current_analyses[repo_name] = results[repo_name]
+    
+    # Generate summary if we have multiple repos
+    if completed_repos > 1:
+        results['__summary__'] = generate_summary_content(
+            current_analyses, 
+            total_repos,
+            completed_repos
+        )
+    
     return results
