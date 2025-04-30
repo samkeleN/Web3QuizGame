@@ -13,7 +13,6 @@ Celo Projects is a Tinder-inspired interface built for Farcaster, allowing users
 - View project details, including problems, solutions, and demo links.
 
 This app leverages the Farcaster Frame SDK, Wagmi for wallet interactions, and the KarmaHQ Gap API for project data.
-
 ## Usage in Farcaster
 
 Celo Projects is designed as a Farcaster mini-app, accessible via Frames. To use it:
