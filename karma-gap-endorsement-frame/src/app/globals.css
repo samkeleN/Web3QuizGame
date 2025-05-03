@@ -1,4 +1,64 @@
-/* globals.css */
+/* Mobile-first styles */
+.container {
+  padding: 1rem;
+  max-width: 500px;
+  margin: auto;
+  font-family: system-ui, sans-serif;
+}
+
+.fetch-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+.fetch-form input {
+  padding: 0.75rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  outline: none;
+}
+
+.fetch-form button {
+  padding: 0.75rem;
+  font-size: 1rem;
+  background-color: #4f46e5; /* Indigo */
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.fetch-form button:hover {
+  background-color: #4338ca;
+}
+
+.error {
+  color: red;
+  margin-top: 1rem;
+}
+
+.project-card {
+  background-color: #f9fafb;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-top: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* Responsive styles for larger screens */
+@media (min-width: 600px) {
+  .fetch-form {
+    flex-direction: row;
+  }
+
+  .fetch-form input {
+    flex: 1;
+  }
+}
 
 body {
   font-family: sans-serif;
