@@ -1,0 +1,74 @@
+import { useEffect, useState } from "react";
+import type { BuilderScore } from "~/types";
+import LeaderboardItem from "./leaderboard-item";
+
+export default function Leaderboard() {
+  const [builders, setBuilders] = useState<BuilderScore[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      try {
+        const response = await fetch("/api/leaderboard");
+        if (!response.ok) {
+          throw new Error("Failed to fetch leaderboard");
+        }
+        const data = await response.json();
+        // Sort builders by talent score in descending order
+        const sortedBuilders = data.sort(
+          (a: BuilderScore, b: BuilderScore) => b.talentScore - a.talentScore
+        );
+        setBuilders(sortedBuilders);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to fetch leaderboard"
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchLeaderboard();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="bg-[#1C1C1E] text-white p-6 rounded-xl">
+        <h2 className="text-2xl font-bold mb-6">Leaderboard</h2>
+        <div className="space-y-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div
+              key={`skeleton-${i}-${Date.now()}`}
+              className="flex items-center justify-between p-3 bg-[#2C2C2E] rounded-lg animate-pulse"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gray-700" />
+                <div className="space-y-2">
+                  <div className="h-4 w-24 bg-gray-700 rounded" />
+                  <div className="h-3 w-16 bg-gray-700 rounded" />
+                </div>
+              </div>
+              <div className="h-6 w-8 bg-gray-700 rounded" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div className="text-center text-red-500 p-4">{error}</div>;
+  }
+
+  return (
+    <div className="bg-[#1C1C1E] text-white p-6 rounded-xl">
+      <h2 className="text-2xl font-bold mb-6">Leaderboard</h2>
+      <div className="space-y-4">
+        {builders.map((builder, index) => (
+          <LeaderboardItem key={builder.id} builder={builder} index={index} />
+        ))}
+      </div>
+    </div>
+  );
+}
