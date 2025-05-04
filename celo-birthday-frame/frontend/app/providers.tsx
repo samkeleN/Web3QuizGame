@@ -9,7 +9,7 @@ import {
 } from "@farcaster/auth-kit";
 import { cookieToInitialState, WagmiProvider, type Config } from 'wagmi'
 import { createAppKit } from '@reown/appkit/react'
-
+import { ApolloWrapper } from '@/apollo/apolloClient';
 const config = {
   relay: "https://relay.farcaster.xyz",
   rpcUrl: "https://mainnet.optimism.io",
@@ -22,8 +22,8 @@ const queryClient = new QueryClient()
 
 // Set up metadata
 const metadata = {
-  name: 'next-reown-appkit',
-  description: 'next-reown-appkit',
+  name: 'celo-birthday-frame',
+  description: 'celo-birthday-frame',
   url: 'http://localhost:3000', // origin must match your domain & subdomain
   icons: ['https://avatars.githubusercontent.com/u/179229932']
 }
@@ -45,12 +45,13 @@ export const modal = createAppKit({
 
 export function Providers({ children, cookies }: { children: React.ReactNode, cookies: string | null }) {
   const initialState = cookieToInitialState(wagmiAdapter.wagmiConfig as Config, cookies)
-
   return (
     <AuthKitProvider config={config}>
-      <WagmiProvider config={wagmiAdapter.wagmiConfig as Config} initialState={initialState}>
-        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-      </WagmiProvider>
+      <ApolloWrapper >
+        <WagmiProvider config={wagmiAdapter.wagmiConfig as Config} initialState={initialState}>
+          <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+        </WagmiProvider>
+      </ApolloWrapper>
     </AuthKitProvider>
   );
 }
