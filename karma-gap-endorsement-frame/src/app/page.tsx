@@ -1,23 +1,39 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { fetchProjectData } from './lib/fetchProjectData';
 import type { KarmaProject } from './types';
 
 export default function Home() {
   const [url, setUrl] = useState('');
+  const router = useRouter();
   const [project, setProject] = useState<KarmaProject | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError(null);
-    setProject(null);
+  function extractIdFromLink(link: string): string | null {
     try {
-      const data = await fetchProjectData(url);
-      setProject(data);
-    } catch (err) {
-      setError('Could not fetch project data');
+      const url = new URL(link);
+      const parts = url.pathname.split("/");
+      return parts[parts.length - 1] || null;
+    } catch (error) {
+      return null;
+    }
+  }
+  
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+  
+    try {
+      const slug = extractIdFromLink(url); // You'll need to write this logic
+      if (!slug) throw new Error('Invalid link');
+  
+      // Optionally fetch to validate here before redirecting
+  
+      router.push(`/project/${slug}`);
+    } catch (error) {
+      console.error('Fetch error:', error);
+      setProject(null); // or set error message
     }
   };
 
