@@ -46,34 +46,27 @@ export default async function handler(
         signer
       );
 
+      const proofData = {
+        a: proof.a,
+        b: [
+          [proof.b[0][1], proof.b[0][0]],
+          [proof.b[1][1], proof.b[1][0]],
+        ],
+        c: proof.c,
+        pubSignals: publicSignals,
+      };
+
+      console.log(proofData);
+
       try {
         // VERIFY PROOF
-        const tx = await contract.verifySelfProof({
-          a: proof.a,
-          b: [
-            [proof.b[0][1], proof.b[0][0]],
-            [proof.b[1][1], proof.b[1][0]],
-          ],
-          c: proof.c,
-          pubSignals: publicSignals,
-        });
+        const tx = await contract.verifySelfProof(proofData);
         await tx.wait();
         console.log("Successfully called verifySelfProof function");
 
         // REGISTER USER WITH PROOF
 
-        const tx2 = await contract.registerCelebrant(
-          {
-            a: proof.a,
-            b: [
-              [proof.b[0][1], proof.b[0][0]],
-              [proof.b[1][1], proof.b[1][0]],
-            ],
-            c: proof.c,
-            pubSignals: publicSignals,
-          },
-          address
-        );
+        const tx2 = await contract.registerCelebrant(proofData, address);
 
         await tx2.wait();
         console.log("User successfully registered");
