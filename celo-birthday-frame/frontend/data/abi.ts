@@ -1,4 +1,4 @@
-export const ContractAddress = "0xf505C606EFDA156ea50a0C912Baf142495735a87";
+export const ContractAddress = "0xAa11Ea918C258d7C0B74994148B250635C32a947";
 
 export const ContractAbi = [
   {
@@ -90,6 +90,11 @@ export const ContractAbi = [
   {
     inputs: [],
     name: "InvalidYearRange",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "MissingRequiredField",
     type: "error",
   },
   {

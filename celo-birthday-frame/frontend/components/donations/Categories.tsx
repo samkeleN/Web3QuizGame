@@ -7,6 +7,8 @@ import { FETCH_MAIN_CATEGORIES } from "@/apollo/gql/gqlProjects";
 import { useQuery } from "@apollo/client";
 import { MainCategoriesQuery } from "@/apollo/types";
 import { useRouter } from "next/navigation";
+import { useAppKitAccount } from "@reown/appkit/react";
+import { ConnectButton } from "../buttons/ConnectButton";
 
 interface Props {
   setCategoryFn: React.Dispatch<React.SetStateAction<string>>;
@@ -16,6 +18,7 @@ interface Props {
 export default function Categories({ setCategoryFn, setStepFn }: Props) {
   const router = useRouter();
   const [selectedId, setSelectedId] = useState<string | null>("");
+  const { isConnected } = useAppKitAccount();
 
   const { data, loading, error } = useQuery<MainCategoriesQuery>(FETCH_MAIN_CATEGORIES, {
     fetchPolicy: "cache-first"
@@ -82,7 +85,7 @@ export default function Categories({ setCategoryFn, setStepFn }: Props) {
 
         </div>
 
-        {selectedId && (
+        {selectedId && isConnected && (
           <div className="bg-gradient-to-t mt-5 from-[#2D0C72] pb-2">
             <button
               className="w-40 bg-yellow-400 text-[#2D0C72] py-3 rounded-xl font-semibold hover:bg-yellow-300 transition-colors"
@@ -92,6 +95,8 @@ export default function Categories({ setCategoryFn, setStepFn }: Props) {
             </button>
           </div>
         )}
+
+        {!isConnected && <ConnectButton />}
       </div>
     </div>
 

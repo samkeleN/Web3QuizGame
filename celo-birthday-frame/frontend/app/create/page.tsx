@@ -22,8 +22,11 @@ export default function BirthdayCard() {
 
   const checkIfUserRegistered = useCallback(async () => {
     const { data } = await readContract.refetch();
-    console.log("data: ", data);
-  }, [readContract]);
+
+    if (!data) {
+      router.push("/verify")
+    }
+  }, [readContract, router]);
 
   useEffect(() => {
     if (isConnected) {

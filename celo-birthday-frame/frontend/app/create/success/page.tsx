@@ -1,12 +1,41 @@
 'use client'
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { CheckCheck, Copy } from "lucide-react";
 import QRCode from "react-qr-code";
 import { useAppKitAccount } from "@reown/appkit/react";
 import { generateInviteUrl } from "@/lib/helpers";
+import { useReadContract } from "wagmi";
+import { ContractAddress, ContractAbi } from "@/data/abi";
+import { useRouter } from 'next/navigation'
 
 export default function SuccessPage() {
-  const { address } = useAppKitAccount();
+  const router = useRouter();
+  const { address, isConnected } = useAppKitAccount();
+
+  const readContract = useReadContract({
+    address: ContractAddress,
+    abi: ContractAbi,
+    functionName: "isCelebrantRegistered",
+    args: [address],
+    query: {
+      enabled: false,
+    },
+  })
+
+  const checkIfUserRegistered = useCallback(async () => {
+    const { data } = await readContract.refetch();
+
+    if (!data) {
+      router.push("/verify")
+    }
+  }, [readContract, router]);
+
+  useEffect(() => {
+    if (isConnected) {
+      checkIfUserRegistered()
+    }
+  }, [isConnected, checkIfUserRegistered])
+
 
   const [inviteLink, setInviteLink] = useState("");
 

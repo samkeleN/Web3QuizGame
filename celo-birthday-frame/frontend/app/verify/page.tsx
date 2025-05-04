@@ -10,7 +10,12 @@ import { ConnectButton } from "@/components/buttons/ConnectButton";
 import { useReadContract } from "wagmi";
 import { ContractAbi, ContractAddress } from '@/data/abi';
 
+import { BirthdayRecord } from '@/data/types';
+import { useRouter } from 'next/navigation';
+
 function VerifyPage() {
+  const router = useRouter();
+
   const { address, isConnected } = useAppKitAccount();
 
   const readContract = useReadContract({
@@ -23,17 +28,40 @@ function VerifyPage() {
     },
   })
 
+  const readBirthdayRecord = useReadContract({
+    address: ContractAddress,
+    abi: ContractAbi,
+    functionName: "getBirthdayRecord",
+    args: [address],
+    query: {
+      enabled: false,
+    },
+  })
+
+  const getBirthdayRecord = useCallback(async () => {
+    const { data } = await readBirthdayRecord.refetch();
+    const record = data as unknown as BirthdayRecord
+    return record;
+  }, [readBirthdayRecord]);
+
   const checkIfUserRegistered = useCallback(async () => {
     const { data } = await readContract.refetch();
-    console.log("data: ", data);
-  }, [readContract]);
+    if (data) {
+      const record = await getBirthdayRecord();
+      if (record.route == 0) {
+        router.push("/create")
+      } else {
+        router.push(`/birthday/${address}`)
+      }
+
+    }
+  }, [address, getBirthdayRecord, readContract, router]);
 
   useEffect(() => {
     if (isConnected) {
       checkIfUserRegistered()
     }
   }, [isConnected, checkIfUserRegistered])
-
 
   return (
     <div className="min-h-screen bg-[#2D0C72] px-6 py-10 overflow-hidden">

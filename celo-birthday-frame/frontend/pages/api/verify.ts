@@ -21,7 +21,7 @@ export default async function handler(
       console.log("Public signals:", publicSignals);
 
       // Contract details
-      const contractAddress = "0xf505C606EFDA156ea50a0C912Baf142495735a87";
+      const contractAddress = "0xAa11Ea918C258d7C0B74994148B250635C32a947";
 
       const rpc = process.env.NEXT_PUBLIC_RPC_URL as string;
 

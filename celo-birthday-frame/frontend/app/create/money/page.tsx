@@ -1,16 +1,46 @@
 'use client'
 
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Tokens from "@/components/money/tokens";
 import ConfirmationPage from "@/components/donations/Confirmation";
 import { Token } from "@/data/token";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from 'next/navigation'
+import { ContractAddress, ContractAbi } from "@/data/abi";
+import { useAppKitAccount } from "@reown/appkit/react";
+import { useReadContract } from "wagmi";
 
 export default function MoneyPage() {
   const router = useRouter();
   const [token, setToken] = useState<Token | null>(null);
   const [steps, setSteps] = useState(0);
+
+
+  const { address, isConnected } = useAppKitAccount();
+
+  const readContract = useReadContract({
+    address: ContractAddress,
+    abi: ContractAbi,
+    functionName: "isCelebrantRegistered",
+    args: [address],
+    query: {
+      enabled: false,
+    },
+  })
+
+  const checkIfUserRegistered = useCallback(async () => {
+    const { data } = await readContract.refetch();
+
+    if (!data) {
+      router.push("/verify")
+    }
+  }, [readContract, router]);
+
+  useEffect(() => {
+    if (isConnected) {
+      checkIfUserRegistered()
+    }
+  }, [isConnected, checkIfUserRegistered])
 
   const handleSteps = () => {
     if (steps == 0) {

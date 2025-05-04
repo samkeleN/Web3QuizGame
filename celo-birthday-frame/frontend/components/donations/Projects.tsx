@@ -4,9 +4,11 @@ import React, { useState } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "@apollo/client";
-import { FETCH_ALL_PROJECTS, FETCH_PROJECT_BY_ID } from "@/apollo/gql/gqlProjects";
-import { FetchAllProjectsResponse, Project, ProjectByIdQuery } from "@/apollo/types";
+import { FETCH_ALL_PROJECTS } from "@/apollo/gql/gqlProjects";
+import { FetchAllProjectsResponse, Project } from "@/apollo/types";
 import { cleanDescription, projectUrl } from "@/lib/helpers";
+import { useAppKitAccount } from "@reown/appkit/react";
+import { ConnectButton } from "../buttons/ConnectButton";
 
 interface Props {
   category: string;
@@ -15,9 +17,10 @@ interface Props {
 }
 
 export default function Projects({ category, setProjectFn, setStepsFn }: Props) {
+  const { isConnected } = useAppKitAccount();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const { data, loading, error } = useQuery<FetchAllProjectsResponse>(FETCH_ALL_PROJECTS, {
-    variables: { category: 'peace-and-justice' },
+    variables: { category: category },
     fetchPolicy: "cache-first"
   });
 
@@ -97,7 +100,7 @@ export default function Projects({ category, setProjectFn, setStepsFn }: Props) 
           })}
         </div>
 
-        {selectedId && (
+        {selectedId && isConnected && (
           <div className="bg-gradient-to-t mt-5 from-[#2D0C72] pb-2">
             <button
               className="w-40 bg-yellow-400 text-[#2D0C72] py-3 rounded-xl font-semibold hover:bg-yellow-300 transition-colors"
@@ -107,6 +110,9 @@ export default function Projects({ category, setProjectFn, setStepsFn }: Props) 
             </button>
           </div>
         )}
+
+
+        {!isConnected && <ConnectButton />}
       </div>
     </div>
   );

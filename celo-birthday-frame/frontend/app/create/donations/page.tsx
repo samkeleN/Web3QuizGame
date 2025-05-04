@@ -1,17 +1,48 @@
 'use client'
 
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import Projects from "@/components/donations/Projects";
 import Categories from "@/components/donations/Categories";
 import ConfirmationPage from "@/components/donations/Confirmation";
 import { useRouter } from 'next/navigation'
 import { ArrowLeft } from "lucide-react";
 import { Project } from "@/apollo/types";
+import { ContractAddress, ContractAbi } from "@/data/abi";
+import { useAppKitAccount } from "@reown/appkit/react";
+import { useReadContract } from "wagmi";
 export default function DonationsPage() {
   const router = useRouter();
   const [category, setCategory] = useState("");
   const [project, setProject] = useState<Project | null>(null);
   const [steps, setSteps] = useState(0);
+
+
+  const { address, isConnected } = useAppKitAccount();
+
+  const readContract = useReadContract({
+    address: ContractAddress,
+    abi: ContractAbi,
+    functionName: "isCelebrantRegistered",
+    args: [address],
+    query: {
+      enabled: false,
+    },
+  })
+
+  const checkIfUserRegistered = useCallback(async () => {
+    const { data } = await readContract.refetch();
+
+    if (!data) {
+      router.push("/verify")
+    }
+  }, [readContract, router]);
+
+  useEffect(() => {
+    if (isConnected) {
+      checkIfUserRegistered()
+    }
+  }, [isConnected, checkIfUserRegistered])
+
 
   const handleSteps = () => {
     if (steps == 0) {
@@ -52,3 +83,7 @@ export default function DonationsPage() {
     </div>
   );
 }
+function useEffect(arg0: () => void, arg1: (boolean | (() => Promise<void>))[]) {
+  throw new Error("Function not implemented.");
+}
+

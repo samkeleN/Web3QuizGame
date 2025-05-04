@@ -58,6 +58,7 @@ contract CeloBirthdayFrame is SelfVerificationRoot, Ownable {
     error OnlyMoneyRoute();
     error RecordAlreadyExists();
     error NotWithinBirthdayWindow();
+    error MissingRequiredField();
 
     // Constructor to initialize the contract with verification parameters
     constructor(
@@ -93,7 +94,7 @@ contract CeloBirthdayFrame is SelfVerificationRoot, Ownable {
         uint256 donationProjectId
     ) external {
         // Ensure the user is registered
-        if (isCelebrantRegistered(celebrant)) {
+        if (!isCelebrantRegistered(celebrant)) {
             revert UnRegisteredCelerbrant();
         }
 
@@ -103,10 +104,9 @@ contract CeloBirthdayFrame is SelfVerificationRoot, Ownable {
         }
 
         // Validate required fields based on the selected route
-        require(
-            route == BirthdayRoute.Money ? token != address(0) : bytes(donationProjectUrl).length > 0,
-            "Missing required field"
-        );
+        if (route == BirthdayRoute.Money ? token != address(0) : bytes(donationProjectUrl).length > 0) {
+            revert MissingRequiredField();
+        }
 
         // Create and store the birthday record
         birthdayRecords[celebrant] = BirthdayRecord({
@@ -184,7 +184,7 @@ contract CeloBirthdayFrame is SelfVerificationRoot, Ownable {
     // Function to send a birthday gift
     function sendBirthdayGift(address celebrant, uint256 amount) public {
         // Ensure the user is registered
-        if (isCelebrantRegistered(celebrant)) {
+        if (!isCelebrantRegistered(celebrant)) {
             revert UnRegisteredCelerbrant();
         }
 

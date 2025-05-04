@@ -6,6 +6,7 @@ import { useReadContract, useWriteContract } from "wagmi";
 import { TokenIcon } from "../tokens/TokenIcon";
 import { useAppKitAccount } from "@reown/appkit/react";
 import { ConnectButton } from "../buttons/ConnectButton";
+import { TransactionLoader } from "../loader";
 
 export default function SendMoneyView({ celebrantAddress, token, setStatusFn }:
   {
@@ -16,6 +17,7 @@ export default function SendMoneyView({ celebrantAddress, token, setStatusFn }:
 
   const [amount, setAmount] = useState(50);
   const [celebrantName, setCelebrantName] = useState("");
+  const [txHash, setTxhash] = useState<Address | "">("");
 
   const { isConnected } = useAppKitAccount();
 
@@ -45,7 +47,11 @@ export default function SendMoneyView({ celebrantAddress, token, setStatusFn }:
 
   const tokenInfo = getTokenByAddress(token as Address);
 
-  const { writeContract, isSuccess } = useWriteContract();
+  const { writeContract, isSuccess, data } = useWriteContract();
+
+  const handleSuccess = () => {
+    setStatusFn(true)
+  }
 
 
   const handleSendGift = () => {
@@ -67,9 +73,10 @@ export default function SendMoneyView({ celebrantAddress, token, setStatusFn }:
 
   useEffect(() => {
     if (isConnected && isSuccess) {
-      setStatusFn(true)
+
+      setTxhash(data);
     }
-  }, [isSuccess, isConnected, setStatusFn])
+  }, [isSuccess, isConnected, data])
 
   return (
     <div className="w-full flex flex-col items-center justify-start">
@@ -107,15 +114,20 @@ export default function SendMoneyView({ celebrantAddress, token, setStatusFn }:
         </div>
 
         {/* Wallet Button */}
-        {!isConnected ?
-          <button
-            onClick={() => handleSendGift()}
-            className="w-full bg-[#066D6D] hover:bg-[#055a5a] text-[#FFF8C9] font-bold text-lg py-3 rounded-xl transition-all"
-          >
-            Send with Wallet
-          </button>
-          : <ConnectButton />
-        }
+        {!isConnected ? (
+          <ConnectButton />
+        ) : (
+          txHash ? (
+            <TransactionLoader txHash={txHash} handleSuccess={handleSuccess} />
+          ) : (
+            <button
+              onClick={() => handleSendGift()}
+              className="w-full bg-[#066D6D] hover:bg-[#055a5a] text-[#FFF8C9] font-bold text-lg py-3 rounded-xl transition-all"
+            >
+              Send with Wallet
+            </button>
+          )
+        )}
 
         {/* Footer */}
         <p className="flex items-center gap-2 text-sm text-[#2D0C72] mt-1">
