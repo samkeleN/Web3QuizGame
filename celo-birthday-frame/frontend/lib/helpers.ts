@@ -1,3 +1,4 @@
+import { page_url } from "@/config";
 export const isSSRMode = typeof window === "undefined";
 
 export function cleanDescription(text: string): string {
@@ -23,4 +24,8 @@ export function decodeBase64Url(encoded: string): string {
   const pad = encoded.length % 4 ? "=".repeat(4 - (encoded.length % 4)) : "";
   const base64 = encoded.replace(/-/g, "+").replace(/_/g, "/") + pad;
   return "0x" + Buffer.from(base64, "base64").toString("hex");
+}
+
+export function generateInviteUrl(address: string): string {
+  return `${page_url}/birthday/${address}`;
 }

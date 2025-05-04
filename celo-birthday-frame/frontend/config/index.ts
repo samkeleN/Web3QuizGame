@@ -24,3 +24,4 @@ export const wagmiAdapter = new WagmiAdapter({
 });
 
 export const config = wagmiAdapter.wagmiConfig;
+export const page_url = process.env.NEXT_PUBLIC_URL;

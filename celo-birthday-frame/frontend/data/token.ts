@@ -8,6 +8,7 @@ export interface Token {
   name: string;
   color: string;
   decimals: number;
+  address: string;
 }
 
 export interface TokenWithAddress {
@@ -37,6 +38,7 @@ export const CELO: Token = Object.freeze({
   name: "Celo Native",
   color: "#FBCC5C",
   decimals: 18,
+  address: "0x471EcE3750Da237f93B8E339c536989b8978a438",
 });
 
 export const cUSD: Token = Object.freeze({
@@ -45,6 +47,7 @@ export const cUSD: Token = Object.freeze({
   name: "Celo Dollar",
   color: "#35D07F",
   decimals: 18,
+  address: "0x765DE816845861e75A25fCA122bb6898B8B1282a",
 });
 
 export const cEUR: Token = Object.freeze({
@@ -53,6 +56,7 @@ export const cEUR: Token = Object.freeze({
   name: "Celo Euro",
   color: "#35D07F",
   decimals: 18,
+  address: "0xD8763CBa276a3738E6DE85b4b3bF5FDed6D6cA73",
 });
 
 export const cREAL: Token = Object.freeze({
@@ -61,6 +65,7 @@ export const cREAL: Token = Object.freeze({
   name: "Celo Real",
   color: "#35D07F",
   decimals: 18,
+  address: "0xe8537a3d056DA446677B9E9d6c5dB704EaAb4787",
 });
 
 export const USDC: Token = Object.freeze({
@@ -69,6 +74,7 @@ export const USDC: Token = Object.freeze({
   name: "USDC",
   color: "#2775CA",
   decimals: 6,
+  address: "0xcebA9300f2b948710d2653dD7B07f33A8B32118C",
 });
 
 export const USDT: Token = Object.freeze({
@@ -77,6 +83,7 @@ export const USDT: Token = Object.freeze({
   name: "USDT",
   color: "#2775CA",
   decimals: 6,
+  address: "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e",
 });
 
 export const Tokens: Record<TokenId, Token> = {

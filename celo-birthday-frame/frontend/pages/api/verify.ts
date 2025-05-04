@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { getUserIdentifier, SelfBackendVerifier } from "@selfxyz/core";
 import { ethers } from "ethers";
-import { abi } from "@/data/abi";
+import { ContractAbi } from "@/data/abi";
 
 export default async function handler(
   req: NextApiRequest,
@@ -21,7 +21,7 @@ export default async function handler(
       console.log("Public signals:", publicSignals);
 
       // Contract details
-      // const contractAddress = "0x881ED38b3ba7EE24eEAD094FA5D6ddD2F56Ba1c0";
+      const contractAddress = "0x951066460530757B019aAe6a99Be0Da8EDD3E8d3";
 
       // // Uncomment this to use the Self backend verifier for offchain verification instead
       // // const selfdVerifier = new SelfBackendVerifier(
@@ -38,37 +38,61 @@ export default async function handler(
       console.log("Extracted address from verification result:", address);
 
       // // Connect to Celo network
-      // const provider = new ethers.JsonRpcProvider("https://forno.celo.org");
-      // const signer = new ethers.Wallet(process.env.PRIVATE_KEY!, provider);
-      // const contract = new ethers.Contract(contractAddress, abi, signer);
+      const provider = new ethers.JsonRpcProvider("https://forno.celo.org");
+      const signer = new ethers.Wallet(process.env.PRIVATE_KEY!, provider);
+      const contract = new ethers.Contract(
+        contractAddress,
+        ContractAbi,
+        signer
+      );
 
-      // try {
-      //   const tx = await contract.verifySelfProof({
-      //     a: proof.a,
-      //     b: [
-      //       [proof.b[0][1], proof.b[0][0]],
-      //       [proof.b[1][1], proof.b[1][0]],
-      //     ],
-      //     c: proof.c,
-      //     pubSignals: publicSignals,
-      //   });
-      //   await tx.wait();
-      //   console.log("Successfully called verifySelfProof function");
-      //   res.status(200).json({
-      //     status: "success",
-      //     result: true,
-      //     credentialSubject: {},
-      //   });
-      // } catch (error) {
-      //   console.error("Error calling verifySelfProof function:", error);
-      //   res.status(400).json({
-      //     status: "error",
-      //     result: false,
-      //     message: "Verification failed or date of birth not disclosed",
-      //     details: {},
-      //   });
-      //   throw error;
-      // }
+      try {
+        // VERIFY PROOF
+        const tx = await contract.verifySelfProof({
+          a: proof.a,
+          b: [
+            [proof.b[0][1], proof.b[0][0]],
+            [proof.b[1][1], proof.b[1][0]],
+          ],
+          c: proof.c,
+          pubSignals: publicSignals,
+        });
+        await tx.wait();
+        console.log("Successfully called verifySelfProof function");
+
+        // REGISTER USER WITH PROOF
+
+        const tx2 = await contract.registerCelebrant(
+          {
+            a: proof.a,
+            b: [
+              [proof.b[0][1], proof.b[0][0]],
+              [proof.b[1][1], proof.b[1][0]],
+            ],
+            c: proof.c,
+            pubSignals: publicSignals,
+          },
+          address
+        );
+
+        await tx2.wait();
+        console.log("User successfully registered");
+
+        res.status(200).json({
+          status: "success",
+          result: true,
+          credentialSubject: {},
+        });
+      } catch (error) {
+        console.error("Error calling verifySelfProof function:", error);
+        res.status(400).json({
+          status: "error",
+          result: false,
+          message: "Verification failed or date of birth not disclosed",
+          details: {},
+        });
+        throw error;
+      }
     } catch (error) {
       console.error("Error verifying proof:", error);
       return res.status(500).json({

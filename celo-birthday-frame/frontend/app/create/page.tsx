@@ -1,10 +1,36 @@
 'use client'
-import React from "react";
+import React, { useCallback, useEffect } from "react";
 import { useRouter } from 'next/navigation'
+import { ContractAddress, ContractAbi } from "@/data/abi";
+import { useAppKitAccount } from "@reown/appkit/react";
+import { useReadContract } from "wagmi";
 
 
 export default function BirthdayCard() {
   const router = useRouter();
+  const { address, isConnected } = useAppKitAccount();
+
+  const readContract = useReadContract({
+    address: ContractAddress,
+    abi: ContractAbi,
+    functionName: "isCelebrantRegistered",
+    args: [address],
+    query: {
+      enabled: false,
+    },
+  })
+
+  const checkIfUserRegistered = useCallback(async () => {
+    const { data } = await readContract.refetch();
+    console.log("data: ", data);
+  }, [readContract]);
+
+  useEffect(() => {
+    if (isConnected) {
+      checkIfUserRegistered()
+    }
+  }, [isConnected, checkIfUserRegistered])
+
   return (
     <div className="min-h-screen bg-[#2D0C72] px-6 py-10 overflow-hidden">
       <div className="container mx-auto max-w-2xl px-4 py-8 text-center flex flex-col items-center justify-start">

@@ -1,4 +1,6 @@
-export const abi = [
+export const ContractAddress = "0x951066460530757B019aAe6a99Be0Da8EDD3E8d3";
+
+export const ContractAbi = [
   {
     inputs: [
       {
@@ -124,17 +126,22 @@ export const abi = [
   },
   {
     inputs: [],
+    name: "RegisteredCelebrant",
+    type: "error",
+  },
+  {
+    inputs: [],
     name: "RegisteredNullifier",
     type: "error",
   },
   {
     inputs: [],
-    name: "UnRegisteredNullifier",
+    name: "UnRegisteredCelerbrant",
     type: "error",
   },
   {
     inputs: [],
-    name: "UserNotRegistered",
+    name: "UnRegisteredNullifier",
     type: "error",
   },
   {
@@ -154,6 +161,25 @@ export const abi = [
       },
     ],
     name: "NewBirthdayRecord",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "celebrant",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "creation_date",
+        type: "uint256",
+      },
+    ],
+    name: "NewCelebrant",
     type: "event",
   },
   {
@@ -216,7 +242,7 @@ export const abi = [
         type: "address",
       },
       {
-        internalType: "enum SelfHappyBirthday.BirthdayRoute",
+        internalType: "enum CeloBirthdayFrame.BirthdayRoute",
         name: "route",
         type: "uint8",
       },
@@ -257,39 +283,12 @@ export const abi = [
   {
     inputs: [
       {
-        components: [
-          {
-            internalType: "uint256[2]",
-            name: "a",
-            type: "uint256[2]",
-          },
-          {
-            internalType: "uint256[2][2]",
-            name: "b",
-            type: "uint256[2][2]",
-          },
-          {
-            internalType: "uint256[2]",
-            name: "c",
-            type: "uint256[2]",
-          },
-          {
-            internalType: "uint256[21]",
-            name: "pubSignals",
-            type: "uint256[21]",
-          },
-        ],
-        internalType: "struct IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof",
-        name: "proof",
-        type: "tuple",
-      },
-      {
         internalType: "address",
         name: "celebrant",
         type: "address",
       },
       {
-        internalType: "enum SelfHappyBirthday.BirthdayRoute",
+        internalType: "enum CeloBirthdayFrame.BirthdayRoute",
         name: "route",
         type: "uint8",
       },
@@ -337,7 +336,7 @@ export const abi = [
             type: "address",
           },
           {
-            internalType: "enum SelfHappyBirthday.BirthdayRoute",
+            internalType: "enum CeloBirthdayFrame.BirthdayRoute",
             name: "route",
             type: "uint8",
           },
@@ -372,9 +371,47 @@ export const abi = [
             type: "uint256",
           },
         ],
-        internalType: "struct SelfHappyBirthday.BirthdayRecord",
+        internalType: "struct CeloBirthdayFrame.BirthdayRecord",
         name: "",
         type: "tuple",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "celebrant",
+        type: "address",
+      },
+    ],
+    name: "getName",
+    outputs: [
+      {
+        internalType: "string[]",
+        name: "",
+        type: "string[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "celebrant",
+        type: "address",
+      },
+    ],
+    name: "isCelebrantRegistered",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
       },
     ],
     stateMutability: "view",
@@ -391,6 +428,46 @@ export const abi = [
       },
     ],
     stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        components: [
+          {
+            internalType: "uint256[2]",
+            name: "a",
+            type: "uint256[2]",
+          },
+          {
+            internalType: "uint256[2][2]",
+            name: "b",
+            type: "uint256[2][2]",
+          },
+          {
+            internalType: "uint256[2]",
+            name: "c",
+            type: "uint256[2]",
+          },
+          {
+            internalType: "uint256[21]",
+            name: "pubSignals",
+            type: "uint256[21]",
+          },
+        ],
+        internalType: "struct IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof",
+        name: "proof",
+        type: "tuple",
+      },
+      {
+        internalType: "address",
+        name: "celebrant",
+        type: "address",
+      },
+    ],
+    name: "registerCelebrant",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {

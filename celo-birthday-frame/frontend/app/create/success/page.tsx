@@ -1,10 +1,15 @@
 'use client'
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { CheckCheck, Copy } from "lucide-react";
 import QRCode from "react-qr-code";
+import { useAppKitAccount } from "@reown/appkit/react";
+import { generateInviteUrl } from "@/lib/helpers";
 
 export default function SuccessPage() {
-  const inviteLink = "birthday.fyi/invite/abc123";
+  const { address } = useAppKitAccount();
+
+  const [inviteLink, setInviteLink] = useState("");
+
   const [copied, setCopied] = useState(false);
 
   const copyToClipboard = async () => {
@@ -16,6 +21,12 @@ export default function SuccessPage() {
       console.error('Failed to copy text: ', err);
     }
   };
+
+  useEffect(() => {
+    if (address) {
+      setInviteLink(generateInviteUrl(address))
+    }
+  }, [address])
 
   return (
     <div className="min-h-screen bg-[#2D0C72] px-6 py-10 overflow-hidden">
@@ -35,8 +46,7 @@ export default function SuccessPage() {
 
         {/* Invite Link with QR */}
         {/* Invite Link with QR */}
-        <div className="bg-[#FFF8C9] text-[#2D0C72] px-5 py-4 rounded-lg flex items-center gap-4 shadow-md">
-
+        {inviteLink && <div className="bg-[#FFF8C9] text-[#2D0C72] px-5 py-4 rounded-lg flex items-center gap-4 shadow-md">
 
           <div className="flex items-center">
             <div className="text-left text-sm font-medium">
@@ -68,6 +78,15 @@ export default function SuccessPage() {
             />
           </div>
         </div>
+        }
+        <a
+          href={inviteLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-8 inline-flex items-center px-6 py-3 bg-[#FFF8C9] text-[#2D0C72] rounded-lg font-medium hover:bg-[#FFF8C9]/90 transition-colors"
+        >
+          View Your Birthday Page
+        </a>
       </div>
     </div>
   );

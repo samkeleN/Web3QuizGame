@@ -1,19 +1,82 @@
-import React, { useState } from "react";
+import { Address } from "viem";
+import { ContractAddress, ContractAbi } from "@/data/abi";
+import { getTokenByAddress } from "@/data/token";
+import React, { useCallback, useEffect, useState } from "react";
+import { useReadContract, useWriteContract } from "wagmi";
+import { TokenIcon } from "../tokens/TokenIcon";
+import { useAppKitAccount } from "@reown/appkit/react";
+import { ConnectButton } from "../buttons/ConnectButton";
 
-export default function SendMoneyView() {
-  const [amount, setAmount] = useState("50");
-  const [message, setMessage] = useState("");
+export default function SendMoneyView({ celebrantAddress, token, setStatusFn }:
+  {
+    celebrantAddress: string,
+    token: string, setStatusFn:
+    React.Dispatch<React.SetStateAction<boolean>>
+  }) {
+
+  const [amount, setAmount] = useState(50);
+  const [celebrantName, setCelebrantName] = useState("");
+
+  const { isConnected } = useAppKitAccount();
+
+  const readCelebrantName = useReadContract({
+    address: ContractAddress,
+    abi: ContractAbi,
+    functionName: "getName",
+    args: [celebrantAddress],
+    query: {
+      enabled: false,
+    },
+  })
+
+  const getCelebrantName = useCallback(async () => {
+    const { data } = await readCelebrantName.refetch();
+    console.log("data: ", data);
+    setCelebrantName("celebrant")
+  }, [readCelebrantName]);
+
+  useEffect(() => {
+
+    if (!celebrantName) {
+      getCelebrantName()
+    }
+
+  }, [celebrantName, getCelebrantName])
+
+  const tokenInfo = getTokenByAddress(token as Address);
+
+  const { writeContract, isSuccess } = useWriteContract();
+
+
+  const handleSendGift = () => {
+
+    if (amount < 0) {
+      return
+    }
+
+    writeContract({
+      address: ContractAddress,
+      abi: ContractAbi,
+      functionName: "sendBirthdayGift",
+      args: [
+        celebrantAddress,
+        amount
+      ],
+    });
+  };
+
+  useEffect(() => {
+    if (isConnected && isSuccess) {
+      setStatusFn(true)
+    }
+  }, [isSuccess, isConnected, setStatusFn])
 
   return (
-    <div className="min-h-screen bg-[#2D0C72] px-4 py-10 text-center flex flex-col items-center overflow-hidden">
-      {/* Confetti */}
-      <svg className="absolute top-6 left-6 w-2 h-2 text-yellow-300" viewBox="0 0 10 10"><circle cx="5" cy="5" r="5" fill="currentColor" /></svg>
-      <svg className="absolute top-8 right-8 w-2 h-2 text-teal-300" viewBox="0 0 10 10"><rect width="10" height="2" fill="currentColor" transform="rotate(45)" /></svg>
-      <svg className="absolute bottom-6 left-10 w-2 h-2 text-purple-400" viewBox="0 0 10 10"><circle cx="5" cy="5" r="5" fill="currentColor" /></svg>
+    <div className="w-full flex flex-col items-center justify-start">
 
       {/* Headline */}
       <h1 className="text-[#FFF8C9] text-3xl sm:text-4xl font-bold mb-6">
-        Celebrate Sarah’s Birthday!
+        Celebrate {celebrantName ? celebrantName : ""}’s Birthday!
       </h1>
 
       {/* Card */}
@@ -24,36 +87,35 @@ export default function SendMoneyView() {
         </div>
 
         {/* Heading and Subtext */}
-        <h2 className="text-center text-[#2D0C72] text-lg font-bold">It’s Sarah’s Birthday!</h2>
+        <h2 className="text-center text-[#2D0C72] text-lg font-bold">It’s  {celebrantName ? celebrantName : ""}’s Birthday!</h2>
         <div className="bg-white rounded-xl px-4 py-2 text-sm text-[#2D0C72] text-center">
           Hey! I’m raising funds this birthday <span className="text-purple-600">♥</span>
         </div>
+
+        <TokenIcon token={tokenInfo} />
 
         {/* Amount Input */}
         <div className="flex items-center gap-2">
           <label className="font-semibold text-[#2D0C72]">Amount:</label>
           <input
-            type="text"
+            type="number"
             value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAmount(Number(e.target.value))}
             className="flex-1 px-3 py-2 border-2 border-[#2D0C72] rounded-xl text-[#2D0C72] text-lg font-semibold outline-none"
           />
           <span className="text-[#2D0C72] font-semibold">USD</span>
         </div>
 
         {/* Wallet Button */}
-        <button className="w-full bg-[#066D6D] hover:bg-[#055a5a] text-[#FFF8C9] font-bold text-lg py-3 rounded-xl transition-all">
-          Send with Wallet
-        </button>
-
-        {/* Optional Message */}
-        <input
-          type="text"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Add a message (optional)"
-          className="w-full px-4 py-3 rounded-xl border border-[#D8D8D8] text-[#2D0C72] outline-none text-sm"
-        />
+        {!isConnected ?
+          <button
+            onClick={() => handleSendGift()}
+            className="w-full bg-[#066D6D] hover:bg-[#055a5a] text-[#FFF8C9] font-bold text-lg py-3 rounded-xl transition-all"
+          >
+            Send with Wallet
+          </button>
+          : <ConnectButton />
+        }
 
         {/* Footer */}
         <p className="flex items-center gap-2 text-sm text-[#2D0C72] mt-1">

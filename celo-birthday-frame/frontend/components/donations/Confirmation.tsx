@@ -1,13 +1,17 @@
 import { Project } from "@/apollo/types";
+import { ContractAbi, ContractAddress } from "@/data/abi";
 import { Token } from "@/data/token";
-import { decodeBase64Url, encodeBase64Url, projectUrl } from "@/lib/helpers";
-import React from "react";
+import { projectUrl } from "@/lib/helpers";
+import React, { useCallback, useEffect } from "react";
+import { zeroAddress } from "viem";
+import { useReadContract, useWriteContract } from "wagmi";
+import { useRouter } from "next/navigation";
+import { useAppKitAccount } from "@reown/appkit/react";
 
 type Props = {
   type: "money" | "donation";
   celebrant: string;
   token?: Token;
-  address?: string;
   category?: string;
   project?: Project;
 
@@ -15,19 +19,65 @@ type Props = {
 
 export default function ConfirmationPage({
   type,
-  celebrant,
   token,
-  address,
   category,
   project
 }: Props) {
+  const { address, isConnected } = useAppKitAccount();
+
+  const router = useRouter();
+  const { writeContract, isSuccess } = useWriteContract();
+
+  const readContract = useReadContract({
+    address: ContractAddress,
+    abi: ContractAbi,
+    functionName: "isCelebrantRegistered",
+    args: [address],
+    query: {
+      enabled: false, // disable the query in onload
+    },
+  });
+
+  const handleCreateRecord = () => {
+    const route = type == "donation" ? 2 : 1;
+    const tokenAddress = type === "money" && token ? token.address : zeroAddress;
+    const donationurl = type === "donation" && project ? projectUrl(project?.slug) : "0";
+    const projectId = type === "donation" && project ? project.id : "0";
+    const projectCategory = type === "donation" && category ? category : "0";
+
+    writeContract({
+      address: ContractAddress,
+      abi: ContractAbi,
+      functionName: "createBirthdayRecord",
+      args: [
+        address,
+        route,
+        tokenAddress,
+        projectCategory,
+        donationurl,
+        Number(projectId)
+      ],
+    });
+  };
+
+  useEffect(() => {
+    if (isSuccess) {
+      router.push("/create/success")
+    }
+  }, [isSuccess, router])
 
 
-  const add = encodeBase64Url(address || "");
-  console.log(add);
-  const addr = decodeBase64Url(add);
+  const checkIfUserRegistered = useCallback(async () => {
+    const { data } = await readContract.refetch();
+    console.log("data: ", data);
+  }, [readContract]);
 
-  console.log(addr)
+  useEffect(() => {
+    if (isConnected) {
+      checkIfUserRegistered()
+    }
+  }, [isConnected, checkIfUserRegistered])
+
 
   return (
     <div className="w-full flex flex-col items-center justify-start mt-4">
@@ -74,6 +124,7 @@ export default function ConfirmationPage({
         )}
       </div>
       <button
+        onClick={() => handleCreateRecord()}
         className="w-40 mt-5 bg-[#F97316] hover:bg-[#ea580c] text-white font-semibold py-3 px-4 rounded-xl text-lg transition-all"
       >
         Create

@@ -1,64 +1,128 @@
-import React from "react";
+import { FETCH_PROJECT_BY_ID } from "@/apollo/gql/gqlProjects";
+import { ProjectByIdQuery } from "@/apollo/types";
+import { ContractAddress, ContractAbi } from "@/data/abi";
+import { useQuery } from "@apollo/client";
+import React, { useCallback, useEffect, useState } from "react";
+import { useReadContract } from "wagmi";
+import { useRouter } from "next/navigation";
 
-export default function BirthdayDonationView() {
-  const celebrant = "Sarah";
-  const project = {
-    name: "TechBridge",
-    description: "Connecting African youths to technology opportunities",
-    link: "giveth.io/project/techbridge",
-    raised: 3315,
-    progress: 0.66
-  };
+export default function BirthdayDonationView({ celebrantAddress, projectId, projectUrl, setStatusFn }:
+  {
+    celebrantAddress: string,
+    projectId: number,
+    projectUrl: string,
+    setStatusFn: React.Dispatch<React.SetStateAction<boolean>>
+  }) {
+  const router = useRouter();
+
+  const [celebrantName, setCelebrantName] = useState("");
+
+  const readCelebrantName = useReadContract({
+    address: ContractAddress,
+    abi: ContractAbi,
+    functionName: "getName",
+    args: [celebrantAddress],
+    query: {
+      enabled: false,
+    },
+  })
+
+  const getCelebrantName = useCallback(async () => {
+    const { data } = await readCelebrantName.refetch();
+    console.log("data: ", data);
+    setCelebrantName("celebrant")
+  }, [readCelebrantName]);
+
+
+  const { data, loading, error } = useQuery<ProjectByIdQuery>(FETCH_PROJECT_BY_ID, { variables: { projectId: Number(projectId) }, fetchPolicy: "cache-first" });
+
+  useEffect(() => {
+
+    if (!celebrantName) {
+      getCelebrantName()
+    }
+
+  }, [celebrantName, getCelebrantName])
+
+
+  if (loading) {
+    return (
+      <p className="text-[#FFF8C9] text-2xl font-bold mt-4">
+        Loading donation information...
+      </p>
+    );
+  }
+
+
+  if (error || !data?.projectById) {
+    return (
+      <div className="flex flex-col items-center gap-4 mt-4">
+        <p className="text-[#FFF8C9] text-2xl font-bold">
+          Failed to load Donation information.
+        </p>
+        <button
+          onClick={() => router.push('/')}
+          className="bg-yellow-400 text-[#2D0C72] px-4 py-2 rounded-xl font-semibold hover:bg-yellow-300 transition-colors"
+        >
+          Go Back
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-[#2D0C72] px-4 py-10 text-center flex flex-col items-center overflow-hidden">
-      {/* Confetti */}
-      <svg className="absolute top-6 left-6 w-2 h-2 text-yellow-300" viewBox="0 0 10 10"><circle cx="5" cy="5" r="5" fill="currentColor" /></svg>
-      <svg className="absolute top-10 right-8 w-2 h-2 text-teal-300" viewBox="0 0 10 10"><rect width="10" height="2" fill="currentColor" transform="rotate(45)" /></svg>
-      <svg className="absolute bottom-6 left-10 w-2 h-2 text-purple-400" viewBox="0 0 10 10"><circle cx="5" cy="5" r="5" fill="currentColor" /></svg>
-
+    <div className="w-full flex flex-col items-center justify-start">
       {/* Headings */}
       <h1 className="text-[#FFF8C9] text-3xl sm:text-4xl font-bold mb-3">
-        Celebrate {celebrant}’s Birthday!
+        Celebrate {celebrantName ? celebrantName : ""}’s Birthday!
       </h1>
       <p className="text-[#FFF8C9] mb-6 text-base">
-        {celebrant} chose to support <strong>{project.name}</strong> for their birthday!
+        {celebrantName ? celebrantName : ""}chose to support <strong>{data.projectById.title}</strong> for their birthday!
       </p>
 
       {/* Project Card */}
       <div className="bg-[#FFF8C9] rounded-2xl shadow-lg px-5 py-6 w-full max-w-md text-left space-y-4">
         <div>
-          <h2 className="text-xl font-bold text-[#2D0C72]">{project.name}</h2>
-          <p className="text-[#2D0C72] text-sm">{project.description}</p>
+          <h2 className="text-xl font-bold text-[#2D0C72]">{data.projectById.title}</h2>
+          <p className="text-[#2D0C72] text-sm">{data.projectById.description}</p>
           <a
-            href={`https://${project.link}`}
+            href={projectUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="text-blue-700 text-sm underline block mt-1"
           >
-            {project.link}
+            {projectUrl}
           </a>
         </div>
 
-        {/* Progress Bar */}
-        <div className="bg-teal-100 h-3 rounded-full overflow-hidden">
-          <div
-            className="bg-teal-700 h-3"
-            style={{ width: `${project.progress * 100}%` }}
+        {/* Project Image */}
+        <div className="flex justify-center">
+          <img
+            src={data.projectById.image}
+            alt={data.projectById.title}
+            className="w-32 h-32 rounded-full object-cover"
           />
         </div>
+
+        {/* Progress Bar */}
         <p className="text-sm text-[#2D0C72] font-medium">
-          Raised so far {project.raised}
+          Impact Location {data.projectById.impactLocation}
         </p>
 
         {/* Donate Button */}
-        <button className="w-full bg-yellow-400 hover:bg-yellow-500 text-[#2D0C72] font-bold text-lg py-3 rounded-xl transition-all">
+        <button
+          onClick={() => {
+            window.open(projectUrl, '_blank', 'noopener,noreferrer')
+            setStatusFn(true);
+          }}
+          className="w-full bg-yellow-400 hover:bg-yellow-500 text-[#2D0C72] font-bold text-lg py-3 rounded-xl transition-all"
+        >
           Donate Now
         </button>
       </div>
 
       <p className="text-[#FFF8C9] text-sm mt-6 max-w-xs">
-        All proceeds go directly to {project.name} via Giveth.
+        All proceeds go directly to {data.projectById.title} via Giveth.
       </p>
     </div>
   );

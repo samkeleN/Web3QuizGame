@@ -2,15 +2,16 @@
 
 import SelfQRcodeWrapper, { SelfApp, SelfAppBuilder } from '@selfxyz/qrcode';
 import { logo } from '../../data/birthdayAppLogo';
+import { useRouter } from 'next/navigation';
 
 export default function QrWrapper({ address }: { address: string }) {
-
+  const router = useRouter();
   const selfApp = new SelfAppBuilder({
-    appName: "Self Birthday",
-    scope: "Self-Denver-Birthday",
+    appName: "Celo Birthday Frame",
+    scope: "Celo-Birthday-Frame",
     // endpoint: "https://happy-birthday-rho-nine.vercel.app/api/verify",
     // run `ngrok http 3000` and copy the url here to test locally
-    endpoint: "https://066a-105-115-4-192.ngrok-free.app/api/verify",
+    endpoint: "https://celo-farcaster-frames-six.vercel.app/api/verify",
     logoBase64: logo,
     userId: address,
     userIdType: "hex",
@@ -23,6 +24,7 @@ export default function QrWrapper({ address }: { address: string }) {
 
   const handleSuccess = async () => {
     console.log('Verification successful');
+    router.push(`/create`)
   };
 
   return (

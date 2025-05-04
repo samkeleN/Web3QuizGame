@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import { memo } from 'react'
-import { Token, TokenId } from '../app/config/tokens'
+import { Token, TokenId } from '@/data/token'
 import CeloIcon from './CELO.svg'
 import USDCIcon from './USDC.svg'
 import USDTIcon from './USDT.svg'

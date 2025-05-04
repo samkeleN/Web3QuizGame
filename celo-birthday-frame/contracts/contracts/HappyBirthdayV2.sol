@@ -11,7 +11,7 @@ import {Formatter} from "@selfxyz/contracts/contracts/libraries/Formatter.sol";
 import {CircuitAttributeHandler} from "@selfxyz/contracts/contracts/libraries/CircuitAttributeHandler.sol";
 import {CircuitConstants} from "@selfxyz/contracts/contracts/constants/CircuitConstants.sol";
 
-contract SelfHappyBirthday is SelfVerificationRoot, Ownable {
+contract CeloBirthdayFrameV1 is SelfVerificationRoot, Ownable {
     using SafeERC20 for IERC20;
 
     // Enum to define the type of birthday route

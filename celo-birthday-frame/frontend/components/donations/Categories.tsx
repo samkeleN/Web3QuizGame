@@ -16,7 +16,6 @@ interface Props {
 export default function Categories({ setCategoryFn, setStepFn }: Props) {
   const router = useRouter();
   const [selectedId, setSelectedId] = useState<string | null>("");
-  const res = useQuery(FETCH_MAIN_CATEGORIES, { fetchPolicy: "cache-first" });
 
   const { data, loading, error } = useQuery<MainCategoriesQuery>(FETCH_MAIN_CATEGORIES, {
     fetchPolicy: "cache-first"
@@ -24,7 +23,7 @@ export default function Categories({ setCategoryFn, setStepFn }: Props) {
 
   if (loading) {
     return (
-      <p className="text-[#FFF8C9] text-2xl font-bold">
+      <p className="text-[#FFF8C9] text-2xl font-bold mt-4">
         Loading categories...
       </p>
     );
@@ -49,9 +48,6 @@ export default function Categories({ setCategoryFn, setStepFn }: Props) {
   const allCategories = data.mainCategories
     .flatMap((cat) => cat.categories)
     .filter((sub) => sub.isActive && sub.canUseOnFrontend);
-
-  console.log(allCategories)
-
 
   return (
     <div className="w-full flex flex-col items-center justify-start">

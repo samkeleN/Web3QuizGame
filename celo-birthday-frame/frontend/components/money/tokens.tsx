@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { ArrowLeft, CheckCircle2 } from "lucide-react";
 import { CELO, cEUR, cREAL, cUSD, Token, USDC, USDT } from "@/data/token";
+import { TokenIcon } from "@/components/tokens/TokenIcon";
 
 const tokens: Token[] = [
   CELO, cUSD, cEUR, cREAL, USDC, USDT
@@ -41,6 +42,7 @@ export default function Tokens({ setTokenFn, setStepsFn }: TokensProps) {
                       shadow-sm hover:scale-[1.02] transition-all flex justify-between items-center
                       ${isSelected ? "bg-teal-600 text-[#FFF8C9]" : "bg-[#FFF1C6] text-[#2D0C72]"}`}
               >
+                {/* <TokenIcon /> */}
                 {token.name}
                 {isSelected && <CheckCircle2 className="w-5 h-5" />}
               </button>

@@ -1,16 +1,39 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useCallback } from 'react';
 import QrWrapper from '@/components/wrappers/QrWrapper';
 import {
   useAppKitAccount,
 } from '@reown/appkit/react'
 import { ConnectButton } from "@/components/buttons/ConnectButton";
 
-function VerifyPage() {
-  const { address, embeddedWalletInfo } = useAppKitAccount();
+import { useReadContract } from "wagmi";
+import { ContractAbi, ContractAddress } from '@/data/abi';
 
-  console.log(embeddedWalletInfo);
+function VerifyPage() {
+  const { address, isConnected } = useAppKitAccount();
+
+  const readContract = useReadContract({
+    address: ContractAddress,
+    abi: ContractAbi,
+    functionName: "isCelebrantRegistered",
+    args: [address],
+    query: {
+      enabled: false,
+    },
+  })
+
+  const checkIfUserRegistered = useCallback(async () => {
+    const { data } = await readContract.refetch();
+    console.log("data: ", data);
+  }, [readContract]);
+
+  useEffect(() => {
+    if (isConnected) {
+      checkIfUserRegistered()
+    }
+  }, [isConnected, checkIfUserRegistered])
+
 
   return (
     <div className="min-h-screen bg-[#2D0C72] px-6 py-10 overflow-hidden">

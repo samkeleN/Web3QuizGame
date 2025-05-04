@@ -3,14 +3,12 @@
 import React, { useState } from "react";
 import Tokens from "@/components/money/tokens";
 import ConfirmationPage from "@/components/donations/Confirmation";
-import { useAccount } from "wagmi"
 import { Token } from "@/data/token";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from 'next/navigation'
 
 export default function MoneyPage() {
   const router = useRouter();
-  const { address } = useAccount();
   const [token, setToken] = useState<Token | null>(null);
   const [steps, setSteps] = useState(0);
 
@@ -39,7 +37,6 @@ export default function MoneyPage() {
           type="money"
           celebrant="Sarah"
           token={token}
-          address={address}
         />}
       </div>
 
