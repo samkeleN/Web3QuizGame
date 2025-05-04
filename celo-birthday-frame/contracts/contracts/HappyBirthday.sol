@@ -11,7 +11,7 @@ import {Formatter} from "@selfxyz/contracts/contracts/libraries/Formatter.sol";
 import {CircuitAttributeHandler} from "@selfxyz/contracts/contracts/libraries/CircuitAttributeHandler.sol";
 import {CircuitConstants} from "@selfxyz/contracts/contracts/constants/CircuitConstants.sol";
 
-contract CeloBirthdayFrameV1 is SelfVerificationRoot, Ownable {
+contract CeloBirthdayFrame is SelfVerificationRoot, Ownable {
     using SafeERC20 for IERC20;
 
     // Enum to define the type of birthday route
@@ -42,9 +42,7 @@ contract CeloBirthdayFrameV1 is SelfVerificationRoot, Ownable {
 
     // Mapping to track registered celebrants
     mapping(address => bool) internal _registeredCelebrants;
-
-    mapping(uint256 => string[]) internal _celebrant_names;
-    mapping(address => uint256) internal _nullifier_record;
+    mapping(address => string[]) internal _celebrant_names;
 
     // Events for logging
     event NewGiftReceived(address sender, address indexed recipient, uint256 amount);
@@ -59,6 +57,7 @@ contract CeloBirthdayFrameV1 is SelfVerificationRoot, Ownable {
     error InvalidAmount();
     error OnlyMoneyRoute();
     error RecordAlreadyExists();
+    error NotWithinBirthdayWindow();
 
     // Constructor to initialize the contract with verification parameters
     constructor(
@@ -125,37 +124,6 @@ contract CeloBirthdayFrameV1 is SelfVerificationRoot, Ownable {
         emit NewBirthdayRecord(celebrant, block.timestamp);
     }
 
-    function registerCelebrant(IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory proof, address celebrant)
-        public
-    {
-        // Validate the proof's scope
-        if (_scope != proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_SCOPE_INDEX]) {
-            revert InvalidScope();
-        }
-
-        // Validate the proof's attestation ID
-        if (_attestationId != proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX]) {
-            revert InvalidAttestationId();
-        }
-
-        // Ensure the nullifier exists
-        if (!_nullifiers[proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_NULLIFIER_INDEX]]) {
-            revert UnRegisteredNullifier();
-        }
-
-        if (_registeredCelebrants[celebrant]) {
-            revert RegisteredCelebrant();
-        }
-
-        // mark celebrants as registered
-        _registeredCelebrants[celebrant] = true;
-
-        _nullifier_record[celebrant] = proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_NULLIFIER_INDEX];
-
-        // Emit event
-        emit NewCelebrant(celebrant, block.timestamp);
-    }
-
     // Function to verify a self-proof
     function verifySelfProof(IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory proof) public override {
         // Validate the proof's scope
@@ -196,8 +164,18 @@ contract CeloBirthdayFrameV1 is SelfVerificationRoot, Ownable {
             // Extract names which was disclosed from verification
             string[] memory names = CircuitAttributeHandler.getName(charcodes);
 
+            // get recovered_address
+            address recovered_address =
+                address(uint160(proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX]));
+
+            // set user as registered
+            _registeredCelebrants[recovered_address] = true;
+
             // store names with nullifier
-            _celebrant_names[result.nullifier] = names;
+            _celebrant_names[recovered_address] = names;
+
+            // Emit event
+            emit NewCelebrant(recovered_address, block.timestamp);
         } else {
             revert("Not eligible: Not within 5 days of birthday");
         }
@@ -236,11 +214,11 @@ contract CeloBirthdayFrameV1 is SelfVerificationRoot, Ownable {
     }
 
     // Get celebrant name
-    function getName(address celebrant) public view returns (string[] memory) {
-        return _celebrant_names[_nullifier_record[celebrant]];
+    function getCelebrantName(address celebrant) public view returns (string[] memory) {
+        return _celebrant_names[celebrant];
     }
-
     // Internal function to check if the user is within the birthday window
+
     function _isWithinBirthdayWindow(bytes memory charcodes) internal view returns (bool) {
         // Extract the date of birth
         string memory dob = CircuitAttributeHandler.getDateOfBirth(charcodes);

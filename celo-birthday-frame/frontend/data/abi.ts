@@ -1,4 +1,4 @@
-export const ContractAddress = "0x951066460530757B019aAe6a99Be0Da8EDD3E8d3";
+export const ContractAddress = "0xf505C606EFDA156ea50a0C912Baf142495735a87";
 
 export const ContractAbi = [
   {
@@ -90,6 +90,11 @@ export const ContractAbi = [
   {
     inputs: [],
     name: "InvalidYearRange",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "NotWithinBirthdayWindow",
     type: "error",
   },
   {
@@ -387,7 +392,7 @@ export const ContractAbi = [
         type: "address",
       },
     ],
-    name: "getName",
+    name: "getCelebrantName",
     outputs: [
       {
         internalType: "string[]",
@@ -428,46 +433,6 @@ export const ContractAbi = [
       },
     ],
     stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        components: [
-          {
-            internalType: "uint256[2]",
-            name: "a",
-            type: "uint256[2]",
-          },
-          {
-            internalType: "uint256[2][2]",
-            name: "b",
-            type: "uint256[2][2]",
-          },
-          {
-            internalType: "uint256[2]",
-            name: "c",
-            type: "uint256[2]",
-          },
-          {
-            internalType: "uint256[21]",
-            name: "pubSignals",
-            type: "uint256[21]",
-          },
-        ],
-        internalType: "struct IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof",
-        name: "proof",
-        type: "tuple",
-      },
-      {
-        internalType: "address",
-        name: "celebrant",
-        type: "address",
-      },
-    ],
-    name: "registerCelebrant",
-    outputs: [],
-    stateMutability: "nonpayable",
     type: "function",
   },
   {

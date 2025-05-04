@@ -1,12 +1,12 @@
 'use client'
 
 import React, { useState } from "react";
-import { ArrowLeft, CheckCircle2 } from "lucide-react";
-import { CELO, cEUR, cREAL, cUSD, Token, USDC, USDT } from "@/data/token";
+import { CheckCircle2 } from "lucide-react";
+import { CELO, cEUR, cREAL, cUSD, Token, USDC } from "@/data/token";
 import { TokenIcon } from "@/components/tokens/TokenIcon";
 
 const tokens: Token[] = [
-  CELO, cUSD, cEUR, cREAL, USDC, USDT
+  CELO, cUSD, cEUR, cREAL, USDC
 ];
 
 interface TokensProps {
@@ -38,13 +38,16 @@ export default function Tokens({ setTokenFn, setStepsFn }: TokensProps) {
                   setSelectedId(token.id)
                   setTokenFn(token)
                 }}
-                className={`w-full max-w-xs bg-[#FFF1C6] text-[#2D0C72] text-lg font-semibold px-4 py-4 rounded-2xl 
-                      shadow-sm hover:scale-[1.02] transition-all flex justify-between items-center
-                      ${isSelected ? "bg-teal-600 text-[#FFF8C9]" : "bg-[#FFF1C6] text-[#2D0C72]"}`}
+                className={`w-full max-w-xs ${isSelected ? "bg-teal-600 text-[#FFF8C9]" : "bg-[#FFF1C6] text-[#2D0C72]"}
+                    text-lg font-semibold px-6 py-4 rounded-2xl shadow-sm 
+                    hover:scale-[1.02] transition-all
+                    flex items-center space-x-4`}
               >
-                {/* <TokenIcon /> */}
-                {token.name}
-                {isSelected && <CheckCircle2 className="w-5 h-5" />}
+                <div className="w-8 h-8 flex-shrink-0">
+                  {token && <TokenIcon token={token} />}
+                </div>
+                <span className="flex-grow text-left">{token.name}</span>
+                {isSelected && <CheckCircle2 className="w-5 h-5 flex-shrink-0" />}
               </button>
             ))
           })}

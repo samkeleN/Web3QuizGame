@@ -3,7 +3,6 @@ import { memo } from 'react'
 import { Token, TokenId } from '@/data/token'
 import CeloIcon from './CELO.svg'
 import USDCIcon from './USDC.svg'
-import USDTIcon from './USDT.svg'
 import cEURIcon from './USDC.svg'
 import cREALIcon from './cREAL.svg'
 import cUSDIcon from './cUSD.svg'
@@ -35,7 +34,6 @@ function _TokenIcon({ token, size = 'm' }: Props) {
   else if (token?.id === TokenId.cEUR) imgSrc = cEURIcon
   else if (token?.id === TokenId.cREAL) imgSrc = cREALIcon
   else if (token?.id === TokenId.USDC) imgSrc = USDCIcon
-  else if (token?.id === TokenId.USDT) imgSrc = USDTIcon
 
   if (imgSrc) {
     return (
@@ -59,7 +57,7 @@ function _TokenIcon({ token, size = 'm' }: Props) {
       }}
     >
       <div
-        className="font-semibold text-white"
+        className="font-semibold text-[#2D0C72] text-lg"
         style={{
           fontSize,
         }}

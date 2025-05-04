@@ -21,11 +21,13 @@ export default async function handler(
       console.log("Public signals:", publicSignals);
 
       // Contract details
-      const contractAddress = "0x951066460530757B019aAe6a99Be0Da8EDD3E8d3";
+      const contractAddress = "0xf505C606EFDA156ea50a0C912Baf142495735a87";
+
+      const rpc = process.env.NEXT_PUBLIC_RPC_URL as string;
 
       // // Uncomment this to use the Self backend verifier for offchain verification instead
       // // const selfdVerifier = new SelfBackendVerifier(
-      // //     'https://forno.celo.org',
+      // //     rpc,
       // //     "Self-Denver-Birthday",
       // //     "your ngrok endpoint",
       // //     "hex",
@@ -38,7 +40,7 @@ export default async function handler(
       console.log("Extracted address from verification result:", address);
 
       // // Connect to Celo network
-      const provider = new ethers.JsonRpcProvider("https://forno.celo.org");
+      const provider = new ethers.JsonRpcProvider(rpc);
       const signer = new ethers.Wallet(process.env.PRIVATE_KEY!, provider);
       const contract = new ethers.Contract(
         contractAddress,
@@ -63,13 +65,6 @@ export default async function handler(
         const tx = await contract.verifySelfProof(proofData);
         await tx.wait();
         console.log("Successfully called verifySelfProof function");
-
-        // REGISTER USER WITH PROOF
-
-        const tx2 = await contract.registerCelebrant(proofData, address);
-
-        await tx2.wait();
-        console.log("User successfully registered");
 
         res.status(200).json({
           status: "success",

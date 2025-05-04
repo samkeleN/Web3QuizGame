@@ -1,6 +1,6 @@
 import { Project } from "@/apollo/types";
 import { ContractAbi, ContractAddress } from "@/data/abi";
-import { Token } from "@/data/token";
+import { getTokenAddress, Token } from "@/data/token";
 import { projectUrl } from "@/lib/helpers";
 import React, { useCallback, useEffect } from "react";
 import { zeroAddress } from "viem";
@@ -40,7 +40,7 @@ export default function ConfirmationPage({
 
   const handleCreateRecord = () => {
     const route = type == "donation" ? 2 : 1;
-    const tokenAddress = type === "money" && token ? token.address : zeroAddress;
+    const tokenAddress = type === "money" && token ? getTokenAddress(token.id, '44787') : zeroAddress;
     const donationurl = type === "donation" && project ? projectUrl(project?.slug) : "0";
     const projectId = type === "donation" && project ? project.id : "0";
     const projectCategory = type === "donation" && category ? category : "0";
@@ -95,8 +95,13 @@ export default function ConfirmationPage({
               <p className="text-[#2D0C72] text-sm">{address}</p>
             </div>
             <div>
-              <p className="text-[#2D0C72] font-semibold">Token:</p>
-              {token && <p className="text-[#2D0C72] text-sm">{token.name}</p>}
+              <p className="text-[#2D0C72] font-semibold">Token Info:</p>
+              {token &&
+                <>
+                  <p className="text-[#2D0C72] text-sm">{token.name}</p>
+                  <p className="text-[#2D0C72] text-sm">({getTokenAddress(token.id, '44787')})</p>
+                </>
+              }
             </div>
           </>
         ) : (

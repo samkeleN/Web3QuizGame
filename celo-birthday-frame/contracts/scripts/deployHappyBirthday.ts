@@ -14,22 +14,17 @@ async function main() {
   });
   console.log("Calculated future contract address:", futureAddress);
 
-  // For prod environment
-  // const identityVerificationHub = "0x9AcA2112D34Ef021084264F6f5eef2a99a5bA7b1";
-  // For staging environment
-  const identityVerificationHub = "0xDCAa9D9b8E8Bb5696c5d4b47da84aD37b8DEb9A8";
+  // For testnet environment
+  const identityVerificationHub = "0x3e2487a250e2A7b56c7ef5307Fb591Cc8C83623D";
+  // For mainnet environment
+  // const identityVerificationHub = "0x77117D60eaB7C044e785D68edB6C7E0e134970Ea";
 
   const scope = hashEndpointWithScope(
-    "https://celo-farcaster-frames-six.vercel.app",
+    "https://celo-farcaster-frames-six.vercel.app/api/verify",
     "Celo-Birthday-Frame"
   );
 
   const attestationId = 1n;
-
-  //  For mainnet environment
-  // const token = "0xcebA9300f2b948710d2653dD7B07f33A8B32118C";
-  // For staging environment
-  // const token = "0x2F25deB3848C207fc8E0c34035B3Ba7fC157602B";
 
   const olderThanEnabled = false;
   const olderThan = 18n;
@@ -65,7 +60,7 @@ async function main() {
 
   console.log("To verify on Celoscan:");
   console.log(
-    `npx hardhat verify --network celo ${deployedAddress} ${identityVerificationHub} ${scope} ${attestationId} ${olderThanEnabled} ${olderThan} ${forbiddenCountriesEnabled} "[${forbiddenCountriesListPacked.join(
+    `npx hardhat verify --network alfajores ${deployedAddress} ${identityVerificationHub} ${scope} ${attestationId} ${olderThanEnabled} ${olderThan} ${forbiddenCountriesEnabled} "[${forbiddenCountriesListPacked.join(
       ","
     )}]" "[${ofacEnabled.join(",")}]"`
   );
