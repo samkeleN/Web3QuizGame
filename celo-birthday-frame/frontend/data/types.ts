@@ -2,7 +2,7 @@ export type BirthdayRecord = {
   category?: string;
   celebrant: string;
   creationDate: bigint;
-  donationProjectid?: bigint;
+  donationProjectId?: bigint;
   donationProjectUrl?: string;
   moneyGiftsReceived: bigint;
   route: number;

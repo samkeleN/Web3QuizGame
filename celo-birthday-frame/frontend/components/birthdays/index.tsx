@@ -7,30 +7,12 @@ import { BirthdayRecord } from "@/data/types";
 import BirthdayDonationView from "./sendDonationView";
 import SendMoneyView from "./sendMoneyView";
 import DonationSuccessPage from "./Success";
+import { useRouter } from "next/navigation";
 
 export default function BirthdayPage({ address }: { address: string }) {
+  const router = useRouter();
   const [birthDayRecord, setBirthdayRecord] = useState<BirthdayRecord | null>(null);
   const [transactionSuccess, setTransactionSuccess] = useState(false);
-
-  const readContract = useReadContract({
-    address: ContractAddress,
-    abi: ContractAbi,
-    functionName: "isCelebrantRegistered",
-    args: [address],
-    query: {
-      enabled: false,
-    },
-  })
-
-  const checkIfUserRegistered = useCallback(async () => {
-    const { data } = await readContract.refetch();
-    console.log("data: ", data);
-  }, [readContract]);
-
-  useEffect(() => {
-    checkIfUserRegistered()
-  }, [checkIfUserRegistered])
-
 
   const readContract2 = useReadContract({
     address: ContractAddress,
@@ -44,7 +26,6 @@ export default function BirthdayPage({ address }: { address: string }) {
 
   const getBirthdayRecord = useCallback(async () => {
     const { data } = await readContract2.refetch();
-    console.log(data as unknown as BirthdayRecord)
     setBirthdayRecord(data as unknown as BirthdayRecord);
   }, [readContract2]);
 
@@ -66,17 +47,30 @@ export default function BirthdayPage({ address }: { address: string }) {
   return (
     <div className="w-full flex flex-col items-center justify-start mt-4">
 
-      {transactionSuccess ?
+      {!transactionSuccess ?
 
         <>
-          {birthDayRecord.route == 2 && birthDayRecord.donationProjectid && birthDayRecord.donationProjectUrl &&
-            <BirthdayDonationView celebrantAddress={address} projectId={Number(birthDayRecord.donationProjectid)} projectUrl={birthDayRecord.donationProjectUrl} setStatusFn={setTransactionSuccess} />
+          {birthDayRecord.route == 2 && birthDayRecord.donationProjectId &&
+            <BirthdayDonationView celebrantAddress={address} projectId={Number(birthDayRecord.donationProjectId)} projectUrl={birthDayRecord.donationProjectUrl || ""} setStatusFn={setTransactionSuccess} />
           }
 
-          {birthDayRecord.route == 1 && birthDayRecord.token &&
+          {birthDayRecord.route == 1 &&
             <SendMoneyView celebrantAddress={address} token={birthDayRecord.token} setStatusFn={setTransactionSuccess} />
           }
 
+          {birthDayRecord.route == 0 &&
+            <div className="flex flex-col items-center gap-4 mt-4">
+              <p className="text-[#FFF8C9] text-2xl font-bold">
+                Birthday Record not found.
+              </p>
+              <button
+                onClick={() => router.push('/')}
+                className="bg-yellow-400 text-[#2D0C72] px-4 py-2 rounded-xl font-semibold hover:bg-yellow-300 transition-colors"
+              >
+                Go Back
+              </button>
+            </div>
+          }
         </>
         :
         <>

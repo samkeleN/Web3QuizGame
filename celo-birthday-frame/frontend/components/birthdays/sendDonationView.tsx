@@ -13,6 +13,8 @@ export default function BirthdayDonationView({ celebrantAddress, projectId, proj
     projectUrl: string,
     setStatusFn: React.Dispatch<React.SetStateAction<boolean>>
   }) {
+
+
   const router = useRouter();
 
   const [celebrantName, setCelebrantName] = useState("");
@@ -20,7 +22,7 @@ export default function BirthdayDonationView({ celebrantAddress, projectId, proj
   const readCelebrantName = useReadContract({
     address: ContractAddress,
     abi: ContractAbi,
-    functionName: "getName",
+    functionName: "getCelebrantName",
     args: [celebrantAddress],
     query: {
       enabled: false,
@@ -29,21 +31,26 @@ export default function BirthdayDonationView({ celebrantAddress, projectId, proj
 
   const getCelebrantName = useCallback(async () => {
     const { data } = await readCelebrantName.refetch();
-    console.log("data: ", data);
-    setCelebrantName("celebrant")
+    if (data && Array.isArray(data)) {
+      setCelebrantName(data.join(", "))
+    } else {
+      setCelebrantName("celebrant")
+    }
+
   }, [readCelebrantName]);
 
-
-  const { data, loading, error } = useQuery<ProjectByIdQuery>(FETCH_PROJECT_BY_ID, { variables: { projectId: Number(projectId) }, fetchPolicy: "cache-first" });
+  const { data, loading, error } = useQuery<ProjectByIdQuery>(FETCH_PROJECT_BY_ID, {
+    variables: {
+      id: Number(projectId), skip: 0, status: "verified", take: 1
+    }, fetchPolicy: "cache-first"
+  });
 
   useEffect(() => {
-
     if (!celebrantName) {
       getCelebrantName()
     }
 
   }, [celebrantName, getCelebrantName])
-
 
   if (loading) {
     return (
@@ -74,10 +81,10 @@ export default function BirthdayDonationView({ celebrantAddress, projectId, proj
     <div className="w-full flex flex-col items-center justify-start">
       {/* Headings */}
       <h1 className="text-[#FFF8C9] text-3xl sm:text-4xl font-bold mb-3">
-        Celebrate {celebrantName ? celebrantName : ""}’s Birthday!
+        Celebrate Birthday!
       </h1>
       <p className="text-[#FFF8C9] mb-6 text-base">
-        {celebrantName ? celebrantName : ""}chose to support <strong>{data.projectById.title}</strong> for their birthday!
+        {celebrantName ? celebrantName : ""} chose to support <strong>{data.projectById.title}</strong> for their birthday!
       </p>
 
       {/* Project Card */}
@@ -85,29 +92,16 @@ export default function BirthdayDonationView({ celebrantAddress, projectId, proj
         <div>
           <h2 className="text-xl font-bold text-[#2D0C72]">{data.projectById.title}</h2>
           <p className="text-[#2D0C72] text-sm">{data.projectById.description}</p>
-          <a
-            href={projectUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-700 text-sm underline block mt-1"
-          >
-            {projectUrl}
-          </a>
         </div>
 
         {/* Project Image */}
         <div className="flex justify-center">
           <img
-            src={data.projectById.image}
+            src={`https://giveth.io${data.projectById.image}`}
             alt={data.projectById.title}
-            className="w-32 h-32 rounded-full object-cover"
+            className="w-full h-32 object-cover"
           />
         </div>
-
-        {/* Progress Bar */}
-        <p className="text-sm text-[#2D0C72] font-medium">
-          Impact Location {data.projectById.impactLocation}
-        </p>
 
         {/* Donate Button */}
         <button

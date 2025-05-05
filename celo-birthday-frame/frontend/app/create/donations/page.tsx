@@ -44,7 +44,6 @@ export default function DonationsPage() {
     }
   }, [isConnected, checkIfUserRegistered])
 
-
   const handleSteps = () => {
     if (steps == 0) {
       router.push('/create')

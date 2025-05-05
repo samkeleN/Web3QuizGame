@@ -13,7 +13,7 @@ export function TransactionLoader({ txHash, handleSuccess }: LoadingTransactionP
     hash: txHash,
     timeout: 5000,
     chainId: 44787,
-    retryCount: 2
+    retryCount: 2,
   });
 
   const handler = useCallback(() => {
