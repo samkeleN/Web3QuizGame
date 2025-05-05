@@ -1,4 +1,4 @@
-import { cookieStorage, createStorage } from "wagmi";
+import { cookieStorage, createStorage, http } from "wagmi";
 import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
 import { celoAlfajores } from "@reown/appkit/networks";
 import type { AppKitNetwork } from "@reown/appkit/networks";
@@ -19,6 +19,9 @@ export const wagmiAdapter = new WagmiAdapter({
     storage: cookieStorage,
   }),
   ssr: true,
+  transports: {
+    [celoAlfajores.id]: http("https://celo-alfajores.drpc.org"),
+  },
   projectId,
   networks,
 });
