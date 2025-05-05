@@ -74,7 +74,7 @@ export default function BirthdayPage({ address }: { address: string }) {
         </>
         :
         <>
-          <DonationSuccessPage />
+          <DonationSuccessPage celebrantAddress={address} />
         </>
       }
 

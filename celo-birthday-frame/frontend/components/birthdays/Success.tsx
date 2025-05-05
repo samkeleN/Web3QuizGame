@@ -1,8 +1,38 @@
-import React from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { CheckCircle2 } from "lucide-react";
+import { ContractAddress, ContractAbi } from "@/data/abi";
+import { useReadContract } from "wagmi";
 
-export default function DonationSuccessPage() {
-  const celebrant = "Sarah";
+export default function DonationSuccessPage({ celebrantAddress }: { celebrantAddress: string }) {
+  const [celebrantName, setCelebrantName] = useState("");
+
+  const readCelebrantName = useReadContract({
+    address: ContractAddress,
+    abi: ContractAbi,
+    functionName: "getCelebrantName",
+    args: [celebrantAddress],
+    query: {
+      enabled: false,
+    },
+  })
+
+  const getCelebrantName = useCallback(async () => {
+    const { data } = await readCelebrantName.refetch();
+    if (data && Array.isArray(data)) {
+      setCelebrantName(data.join(", "))
+    } else {
+      setCelebrantName("celebrant")
+    }
+
+  }, [readCelebrantName]);
+
+
+  useEffect(() => {
+    if (!celebrantName) {
+      getCelebrantName()
+    }
+
+  }, [celebrantName, getCelebrantName])
 
   return (
     <div className="min-h-screen bg-[#2D0C72] px-4 py-12 flex flex-col items-center justify-center text-center relative overflow-hidden">
@@ -15,7 +45,7 @@ export default function DonationSuccessPage() {
       {/* Success Text */}
       <h1 className="text-[#FFF8C9] text-3xl font-bold mb-3">Donation successful!</h1>
       <p className="text-[#FFF8C9] text-lg max-w-xs">
-        You helped {celebrant} celebrate their birthday.
+        You helped {celebrantName} celebrate their birthday.
       </p>
     </div>
   );
