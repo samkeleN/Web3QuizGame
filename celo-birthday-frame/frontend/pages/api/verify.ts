@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { getUserIdentifier, SelfBackendVerifier } from "@selfxyz/core";
 import { ethers } from "ethers";
-import { ContractAbi } from "@/data/abi";
+import { ContractAbi, ContractAddress } from "@/data/abi";
 
 export default async function handler(
   req: NextApiRequest,
@@ -19,9 +19,6 @@ export default async function handler(
 
       console.log("Proof:", proof);
       console.log("Public signals:", publicSignals);
-
-      // Contract details
-      const contractAddress = "0xAa11Ea918C258d7C0B74994148B250635C32a947";
 
       const rpc = process.env.NEXT_PUBLIC_RPC_URL as string;
 
@@ -43,7 +40,7 @@ export default async function handler(
       const provider = new ethers.JsonRpcProvider(rpc);
       const signer = new ethers.Wallet(process.env.PRIVATE_KEY!, provider);
       const contract = new ethers.Contract(
-        contractAddress,
+        ContractAddress,
         ContractAbi,
         signer
       );
