@@ -20,7 +20,7 @@ export const ConnectButton = () => {
       {isConnected && (
         <button
           onClick={handleDisconnect}
-          className="p-2 hover:opacity-75 bg-red-800 rounded ml-2"
+          className="p-2 hover:opacity-75 bg-red-800 rounded ml-2 mb-2"
           aria-label="Disconnect"
         >
           <svg

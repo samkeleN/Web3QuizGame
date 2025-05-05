@@ -1,4 +1,5 @@
 import { page_url } from "@/config";
+import { parseUnits } from "viem";
 export const isSSRMode = typeof window === "undefined";
 
 export function cleanDescription(text: string): string {
@@ -28,4 +29,8 @@ export function decodeBase64Url(encoded: string): string {
 
 export function generateInviteUrl(address: string): string {
   return `${page_url}/birthday/${address}`;
+}
+
+export function formatAmount(amount: number, decimals: number): bigint {
+  return parseUnits(amount.toString(), decimals);
 }

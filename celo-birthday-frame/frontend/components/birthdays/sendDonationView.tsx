@@ -32,7 +32,7 @@ export default function BirthdayDonationView({ celebrantAddress, projectId, proj
   const getCelebrantName = useCallback(async () => {
     const { data } = await readCelebrantName.refetch();
     if (data && Array.isArray(data)) {
-      setCelebrantName(data.join(", "))
+      setCelebrantName(data[1])
     } else {
       setCelebrantName("celebrant")
     }
@@ -115,7 +115,7 @@ export default function BirthdayDonationView({ celebrantAddress, projectId, proj
         </button>
       </div>
 
-      <p className="text-[#FFF8C9] text-sm mt-6 max-w-xs">
+      <p className="text-[#FFF8C9] text-sm mt-6 max-w-xs text-center mx-auto">
         All proceeds go directly to {data.projectById.title} via Giveth.
       </p>
     </div>

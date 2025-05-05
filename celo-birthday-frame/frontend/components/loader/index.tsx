@@ -4,11 +4,10 @@ import { useWaitForTransactionReceipt } from "wagmi";
 
 type LoadingTransactionProps = {
   txHash: `0x${string}`;
-  handleSuccess: () => void;
+  handleSuccess: () => void
 };
 
 export function TransactionLoader({ txHash, handleSuccess }: LoadingTransactionProps) {
-  console.log(txHash)
   const { isLoading, isError, isSuccess } = useWaitForTransactionReceipt({
     hash: txHash,
     timeout: 5000,

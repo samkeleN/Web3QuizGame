@@ -1,5 +1,5 @@
-import { Address } from "viem";
-import { ContractAddress, ContractAbi } from "@/data/abi";
+import { Address, parseUnits } from "viem";
+import { ContractAddress, ContractAbi, IERC20Abi } from "@/data/abi";
 import { getTokenByAddress } from "@/data/token";
 import React, { useCallback, useEffect, useState } from "react";
 import { useReadContract, useWriteContract } from "wagmi";
@@ -7,6 +7,7 @@ import { TokenIcon } from "../tokens/TokenIcon";
 import { useAppKitAccount } from "@reown/appkit/react";
 import { ConnectButton } from "../buttons/ConnectButton";
 import { TransactionLoader } from "../loader";
+import { rest } from "lodash";
 
 export default function SendMoneyView({ celebrantAddress, token, setStatusFn }:
   {
@@ -15,16 +16,18 @@ export default function SendMoneyView({ celebrantAddress, token, setStatusFn }:
     React.Dispatch<React.SetStateAction<boolean>>
   }) {
 
-  const [amount, setAmount] = useState(50);
+  const [amount, setAmount] = useState(5);
   const [celebrantName, setCelebrantName] = useState("");
   const [txHash, setTxhash] = useState<Address | "">("");
+  const [txCount, setTxCount] = useState(0);
+  const { writeContract, isSuccess, data, reset } = useWriteContract();
 
   const { isConnected } = useAppKitAccount();
 
   const readCelebrantName = useReadContract({
     address: ContractAddress,
     abi: ContractAbi,
-    functionName: "getName",
+    functionName: "getCelebrantName",
     args: [celebrantAddress],
     query: {
       enabled: false,
@@ -33,9 +36,63 @@ export default function SendMoneyView({ celebrantAddress, token, setStatusFn }:
 
   const getCelebrantName = useCallback(async () => {
     const { data } = await readCelebrantName.refetch();
-    console.log("data: ", data);
-    setCelebrantName("celebrant")
+    if (data && Array.isArray(data)) {
+      setCelebrantName(data[1])
+    } else {
+      setCelebrantName("celebrant")
+    }
   }, [readCelebrantName]);
+
+  const tokenInfo = getTokenByAddress(token as Address);
+
+  const handleSuccess = () => {
+    if (txCount == 0) {
+      setTxCount(1);
+      reset();
+      setTxhash("");
+    }
+    if (txCount == 1) {
+      setStatusFn(true)
+    }
+  }
+
+  const handleApprove = () => {
+    const finalAmount = parseUnits(amount.toString(), tokenInfo.decimals);
+    if (finalAmount < 0) {
+      return
+    }
+    writeContract({
+      address: token as Address,
+      abi: IERC20Abi,
+      functionName: "approve",
+      args: [
+        ContractAddress,
+        finalAmount
+      ],
+    });
+  }
+
+  const handleSendGift = async () => {
+    const finalAmount = parseUnits(amount.toString(), tokenInfo.decimals);
+    if (finalAmount < 0) {
+      return
+    }
+    writeContract({
+      address: ContractAddress,
+      abi: ContractAbi,
+      functionName: "sendBirthdayGift",
+      args: [
+        celebrantAddress,
+        finalAmount
+      ],
+    });
+  };
+
+  useEffect(() => {
+    if (isConnected && isSuccess) {
+      setTxhash(data);
+    }
+  }, [isSuccess, isConnected, data])
 
   useEffect(() => {
 
@@ -45,46 +102,15 @@ export default function SendMoneyView({ celebrantAddress, token, setStatusFn }:
 
   }, [celebrantName, getCelebrantName])
 
-  const tokenInfo = getTokenByAddress(token as Address);
-
-  const { writeContract, isSuccess, data } = useWriteContract();
-
-  const handleSuccess = () => {
-    setStatusFn(true)
-  }
-
-
-  const handleSendGift = () => {
-
-    if (amount < 0) {
-      return
-    }
-
-    writeContract({
-      address: ContractAddress,
-      abi: ContractAbi,
-      functionName: "sendBirthdayGift",
-      args: [
-        celebrantAddress,
-        amount
-      ],
-    });
-  };
-
-  useEffect(() => {
-    if (isConnected && isSuccess) {
-
-      setTxhash(data);
-    }
-  }, [isSuccess, isConnected, data])
-
   return (
     <div className="w-full flex flex-col items-center justify-start">
 
       {/* Headline */}
       <h1 className="text-[#FFF8C9] text-3xl sm:text-4xl font-bold mb-6">
-        Celebrate {celebrantName ? celebrantName : ""}’s Birthday!
+        Celebrate Birthday!
       </h1>
+
+      {isConnected && <ConnectButton />}
 
       {/* Card */}
       <div className="bg-[#FFF8C9] rounded-2xl px-5 py-6 w-full max-w-md shadow-lg text-left space-y-4">
@@ -99,32 +125,40 @@ export default function SendMoneyView({ celebrantAddress, token, setStatusFn }:
           Hey! I’m raising funds this birthday <span className="text-purple-600">♥</span>
         </div>
 
-        <TokenIcon token={tokenInfo} />
-
         {/* Amount Input */}
-        <div className="flex items-center gap-2">
-          <label className="font-semibold text-[#2D0C72]">Amount:</label>
-          <input
-            type="number"
-            value={amount}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAmount(Number(e.target.value))}
-            className="flex-1 px-3 py-2 border-2 border-[#2D0C72] rounded-xl text-[#2D0C72] text-lg font-semibold outline-none"
-          />
-          <span className="text-[#2D0C72] font-semibold">USD</span>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+          <label className="font-semibold text-[#2D0C72] whitespace-nowrap">Amount:</label>
+          <div className="flex w-full items-center gap-2">
+            <input
+              type="number"
+              value={amount}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAmount(Number(e.target.value))}
+              className="w-full px-3 py-2 border-2 border-[#2D0C72] rounded-xl text-[#2D0C72] text-lg font-semibold outline-none"
+            />
+            <div className="w-8 h-8 flex-shrink-0">
+              <TokenIcon token={tokenInfo} />
+            </div>
+          </div>
         </div>
 
         {/* Wallet Button */}
         {!isConnected ? (
-          <ConnectButton />
+          <div className="flex justify-center">
+            <ConnectButton />
+          </div>
+
         ) : (
           txHash ? (
-            <TransactionLoader txHash={txHash} handleSuccess={handleSuccess} />
+            <div className="flex justify-center -mt-2">
+              <TransactionLoader txHash={txHash} handleSuccess={handleSuccess} />
+            </div>
+
           ) : (
             <button
-              onClick={() => handleSendGift()}
+              onClick={() => txCount == 0 ? handleApprove() : handleSendGift()}
               className="w-full bg-[#066D6D] hover:bg-[#055a5a] text-[#FFF8C9] font-bold text-lg py-3 rounded-xl transition-all"
             >
-              Send with Wallet
+              {txCount == 0 ? "Approve Amount" : "Complete Transaction"}
             </button>
           )
         )}

@@ -17,7 +17,6 @@ export default function DonationsPage() {
   const [project, setProject] = useState<Project | null>(null);
   const [steps, setSteps] = useState(0);
 
-
   const { address, isConnected } = useAppKitAccount();
 
   const readContract = useReadContract({
