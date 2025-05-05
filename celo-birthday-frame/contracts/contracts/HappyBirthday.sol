@@ -104,7 +104,7 @@ contract CeloBirthdayFrame is SelfVerificationRoot, Ownable {
         }
 
         // Validate required fields based on the selected route
-        if (route == BirthdayRoute.Money ? token != address(0) : bytes(donationProjectUrl).length > 0) {
+        if (route == BirthdayRoute.Money ? token == address(0) : bytes(donationProjectUrl).length == 0) {
             revert MissingRequiredField();
         }
 
@@ -194,7 +194,7 @@ contract CeloBirthdayFrame is SelfVerificationRoot, Ownable {
         }
 
         // Transfer the specified amount of tokens
-        IERC20(birthdayRecords[msg.sender].token).transferFrom(msg.sender, celebrant, amount);
+        IERC20(birthdayRecords[celebrant].token).transferFrom(msg.sender, celebrant, amount);
 
         // Update the total gifts received
         birthdayRecords[celebrant].moneyGiftsReceived += amount;

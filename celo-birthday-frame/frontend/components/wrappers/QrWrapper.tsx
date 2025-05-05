@@ -24,7 +24,9 @@ export default function QrWrapper({ address }: { address: string }) {
 
   const handleSuccess = async () => {
     console.log('Verification successful');
-    router.push(`/create`)
+    setTimeout(() => {
+      router.push(`/create`)
+    }, 3000)
   };
 
   return (

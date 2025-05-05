@@ -8,8 +8,12 @@ type LoadingTransactionProps = {
 };
 
 export function TransactionLoader({ txHash, handleSuccess }: LoadingTransactionProps) {
+  console.log(txHash)
   const { isLoading, isError, isSuccess } = useWaitForTransactionReceipt({
     hash: txHash,
+    timeout: 5000,
+    chainId: 44787,
+    retryCount: 2
   });
 
   const handler = useCallback(() => {

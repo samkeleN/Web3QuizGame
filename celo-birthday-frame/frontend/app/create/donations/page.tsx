@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Projects from "@/components/donations/Projects";
 import Categories from "@/components/donations/Categories";
 import ConfirmationPage from "@/components/donations/Confirmation";
@@ -10,6 +10,7 @@ import { Project } from "@/apollo/types";
 import { ContractAddress, ContractAbi } from "@/data/abi";
 import { useAppKitAccount } from "@reown/appkit/react";
 import { useReadContract } from "wagmi";
+
 export default function DonationsPage() {
   const router = useRouter();
   const [category, setCategory] = useState("");
@@ -83,7 +84,3 @@ export default function DonationsPage() {
     </div>
   );
 }
-function useEffect(arg0: () => void, arg1: (boolean | (() => Promise<void>))[]) {
-  throw new Error("Function not implemented.");
-}
-
