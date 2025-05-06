@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "~/lib/db";
 
 const TALENT_PROTOCOL_API = "https://api.talentprotocol.com";
@@ -100,4 +100,22 @@ export async function GET(
       { status: 500 }
     );
   }
+}
+
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ address: string }> }
+) {
+  const { address } = await params;
+  await prisma.builderProfile.create({
+    data: {
+      wallet: address,
+      isVerified: true,
+      talentScore: 0,
+    },
+  });
+  return NextResponse.json(
+    { message: "Builder profile created" },
+    { status: 200 }
+  );
 }
