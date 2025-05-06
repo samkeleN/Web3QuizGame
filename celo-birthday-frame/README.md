@@ -1,5 +1,7 @@
 # Happy Birthday
 
+Demo Link: https://celo-farcaster-frames-six.vercel.app/
+
 **It's your birthday? Prove it and get your friends to gift you gifts!**
 
 This project provides a simple contract and frontend for distributing USDC to people on their birthdays, serving as a straightforward example of integrating Self.
