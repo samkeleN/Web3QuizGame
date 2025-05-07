@@ -1,24 +1,16 @@
 import { useState, FormEvent } from "react";
-
-type AuditResult = {
-  repoName?: string;
-  analysis?: string;
-  score?: number;
-  metrics?: {
-    stars?: number;
-    forks?: number;
-    contributors?: number;
-    commits?: number;
-    languages?: Record<string, number>;
-  };
-  criteria?: {
-    name: string;
-    score: string;
-    justification: string;
-  }[];
-};
+import { useSendTransaction } from "wagmi";
+import { AuditResult } from "../../types/audit";
+import { auditRepository } from "../../services/auditService";
 
 export default function EvaluateRepo() {
+  const {
+    sendTransaction,
+    error: sendTxError,
+    isError: isSendTxError,
+    isPending: isSendTxPending,
+  } = useSendTransaction();
+
   const [githubUrl, setGithubUrl] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [auditResult, setAuditResult] = useState<AuditResult | null>(null);
@@ -41,32 +33,8 @@ export default function EvaluateRepo() {
     setError("");
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          github_urls: githubUrl,
-          prompt: "prompts/celo.txt",
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      const analysisText = data.analyses[Object.keys(data.analyses)[0]];
-
-      // Parse the criteria scores from the analysis text
-      const criteria = parseCriteriaScores(analysisText);
-
-      setAuditResult({
-        repoName: Object.keys(data.analyses)[0],
-        analysis: analysisText,
-        score: parseOverallScore(analysisText),
-        metrics: parseMetrics(analysisText),
-        criteria,
-      });
+      const result = await auditRepository(githubUrl);
+      setAuditResult(result);
     } catch (err) {
       setError(
         err instanceof Error
@@ -76,85 +44,6 @@ export default function EvaluateRepo() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const parseOverallScore = (text: string): number | undefined => {
-    const scoreMatch = text.match(/Overall Score.*?(\d+\.\d+)/i);
-    return scoreMatch ? parseFloat(scoreMatch[1]) : undefined;
-  };
-
-  const parseMetrics = (text: string) => {
-    return {
-      stars: extractNumber(text, /Stars:\s*(\d+)/i),
-      forks: extractNumber(text, /Forks:\s*(\d+)/i),
-      contributors: extractNumber(text, /Contributors:\s*(\d+)/i),
-      commits: extractNumber(text, /Commits:\s*(\d+)/i),
-      languages: extractLanguages(text),
-    };
-  };
-
-  const parseCriteriaScores = (text: string) => {
-    const criteria: { name: string; score: string; justification: string }[] =
-      [];
-    const criteriaSection = text.match(
-      /Project Scores([\s\S]*?)Repository Metrics/i
-    );
-
-    if (criteriaSection) {
-      const lines = criteriaSection[1]
-        .split("\n")
-        .filter((line) => line.trim());
-
-      lines.forEach((line) => {
-        if (line.includes("|") && !line.includes("Criteria")) {
-          const parts = line
-            .split("|")
-            .map((part) => part.trim())
-            .filter((part) => part);
-          if (parts.length >= 3) {
-            criteria.push({
-              name: parts[0],
-              score: parts[1],
-              justification: parts[2],
-            });
-          }
-        }
-      });
-    }
-
-    return criteria;
-  };
-
-  const extractNumber = (text: string, regex: RegExp): number | undefined => {
-    const match = text.match(regex);
-    return match ? parseInt(match[1], 10) : undefined;
-  };
-
-  const extractLanguages = (text: string): Record<string, number> => {
-    const languages: Record<string, number> = {};
-    const langSection = text.match(
-      /Language Distribution[\s\S]*?Codebase Breakdown/i
-    );
-
-    if (langSection) {
-      const langLines = langSection[0]
-        .split("\n")
-        .filter((line) => line.includes("%"))
-        .map((line) => line.trim());
-
-      langLines.forEach((line) => {
-        const parts = line.split(":");
-        if (parts.length === 2) {
-          const lang = parts[0].trim();
-          const percent = parseFloat(parts[1].trim().replace("%", ""));
-          if (!isNaN(percent)) {
-            languages[lang] = percent;
-          }
-        }
-      });
-    }
-
-    return languages;
   };
 
   const toggleCriteria = (name: string) => {
