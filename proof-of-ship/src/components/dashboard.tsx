@@ -67,14 +67,19 @@ export default function Dashboard() {
 
   if (!isSDKLoaded) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+      <div className="h-screen w-screen flex items-center justify-center bg-gradient-to-br from-[#1e293b] via-[#0f172a] to-[#334155]">
+        <div className="flex flex-col items-center">
+          <span className="loader mb-4" />
+          <div className="text-white text-lg font-semibold animate-pulse">
+            Loading...
+          </div>
+        </div>
       </div>
     );
   }
   if (!address) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center">
+      <div className="h-screen w-screen flex items-center justify-center bg-gradient-to-br from-[#1e293b] via-[#0f172a] to-[#334155]">
         <ConnectButton />
       </div>
     );
@@ -82,8 +87,13 @@ export default function Dashboard() {
 
   if (isVerificationLoading) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center">
-        <div className="text-white">Checking verification status...</div>
+      <div className="h-screen w-screen flex items-center justify-center bg-gradient-to-br from-[#1e293b] via-[#0f172a] to-[#334155]">
+        <div className="flex flex-col items-center">
+          <span className="loader mb-4" />
+          <div className="text-white text-lg font-semibold animate-pulse">
+            Checking verification status...
+          </div>
+        </div>
       </div>
     );
   }
@@ -104,37 +114,40 @@ export default function Dashboard() {
         paddingLeft: context?.client.safeAreaInsets?.left ?? 0,
         paddingRight: context?.client.safeAreaInsets?.right ?? 0,
       }}
+      className="min-h-screen bg-gradient-to-br from-[#1e293b] via-[#0f172a] to-[#334155] flex items-center justify-center"
     >
-      <div className="max-h-screen bg-background flex flex-col items-center justify-center p-4">
-        <div className="w-full max-w-md mx-auto py-6 px-4 bg-card rounded-xl shadow-sm">
+      <div className="max-h-screen flex flex-col items-center justify-center p-4 w-full">
+        <div className="w-full max-w-md mx-auto py-8 px-6 bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 relative">
           <h1
-            className={`text-3xl font-bold text-center text-white ${londrina.className}`}
+            className={`text-4xl font-extrabold text-center text-white drop-shadow-lg tracking-wide mb-6 ${londrina.className}`}
           >
             PROOF OF SHIP
           </h1>
           <div>
-            <div className="mb-6 flex flex-col justify-center items-center gap-4">
+            <div className="mb-8 flex flex-col justify-center items-center gap-4">
               {!isVerified && !isVerificationLoading && selfApp && (
-                <div className="mt-6">
-                  <h2 className="text-xl font-semibold mb-2 text-white">
+                <div className="mt-6 flex flex-col items-center">
+                  <h2 className="text-2xl font-bold mb-2 text-white drop-shadow">
                     Verify Your Identity
                   </h2>
-                  <p className="mb-4 text-gray-300">
+                  <p className="mb-4 text-gray-200 text-center max-w-xs">
                     Scan the QR code with your Self app to verify your identity
                   </p>
-                  <SelfQRcodeWrapper
-                    selfApp={selfApp}
-                    onSuccess={async () => {
-                      setIsVerified(true);
-                      await fetch(`/api/builder-score/${address}`, {
-                        method: "POST",
-                      });
-                      if (address) {
-                        await refetchBuilderScore();
-                      }
-                    }}
-                    size={300}
-                  />
+                  <div className="p-3 rounded-2xl bg-white/20 border border-white/30 shadow-lg animate-pulse-slow">
+                    <SelfQRcodeWrapper
+                      selfApp={selfApp}
+                      onSuccess={async () => {
+                        setIsVerified(true);
+                        await fetch(`/api/builder-score/${address}`, {
+                          method: "POST",
+                        });
+                        if (address) {
+                          await refetchBuilderScore();
+                        }
+                      }}
+                      size={300}
+                    />
+                  </div>
                 </div>
               )}
             </div>
