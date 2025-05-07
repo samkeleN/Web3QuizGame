@@ -1,15 +1,10 @@
 import { getUserIdentifier, SelfBackendVerifier } from "@selfxyz/core";
 import { type NextRequest, NextResponse } from "next/server";
-import { prisma } from "~/lib/db";
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: Promise<{ address: string }> }
-) {
+export async function POST(req: NextRequest) {
   if (req.method === "POST") {
     try {
       const { proof, publicSignals } = await req.json();
-      const { address } = await params;
 
       if (!proof || !publicSignals) {
         return NextResponse.json(
@@ -19,29 +14,20 @@ export async function POST(
       }
 
       const userId = await getUserIdentifier(publicSignals);
-      console.log("Extracted userId:", userId);
 
-      // Initialize and configure the verifier
       const selfBackendVerifier = new SelfBackendVerifier(
-        "builder-reward-celo-scope",
-        `${process.env.NEXT_PUBLIC_API_URL}/api/verify`,
+        "proof-of-ship-scope",
+        `${process.env.NEXT_PUBLIC_URL}api/verify`,
         "hex",
         true
       );
 
       // Verify the proof
       const result = await selfBackendVerifier.verify(proof, publicSignals);
+      console.log("result", result);
 
       if (result.isValid) {
         console.log("userId", userId);
-        await prisma.builderProfile.create({
-          data: {
-            wallet: address,
-            isVerified: true,
-            talentScore: 0,
-          },
-        });
-        // Return successful verification response
         return NextResponse.json(
           {
             status: "success",

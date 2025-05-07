@@ -90,14 +90,12 @@ export default function Dashboard() {
 
   const selfApp = new SelfAppBuilder({
     appName: "Proof of ship",
-    scope: "builder-reward-celo-scope",
-    endpoint: address
-      ? `${process.env.NEXT_PUBLIC_API_URL}/api/verify/${address}`
-      : undefined,
+    scope: "proof-of-ship-scope",
+    endpoint: `${process.env.NEXT_PUBLIC_URL}api/verify`,
     userId: address,
     userIdType: "hex",
+    endpointType: "https",
   }).build();
-
   return (
     <div
       style={{
@@ -128,7 +126,9 @@ export default function Dashboard() {
                     selfApp={selfApp}
                     onSuccess={async () => {
                       setIsVerified(true);
-                      // Ensure we have both address and isVerified before fetching
+                      await fetch(`/api/builder-score/${address}`, {
+                        method: "POST",
+                      });
                       if (address) {
                         await refetchBuilderScore();
                       }
