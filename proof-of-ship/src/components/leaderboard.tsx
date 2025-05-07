@@ -2,13 +2,21 @@ import { useEffect, useState } from "react";
 import type { BuilderScore } from "~/types";
 import LeaderboardItem from "./leaderboard-item";
 
-export default function Leaderboard() {
+export default function Leaderboard({
+  isVerified,
+  builderScore,
+}: {
+  isVerified: boolean;
+  builderScore: number;
+}) {
   const [builders, setBuilders] = useState<BuilderScore[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     const fetchLeaderboard = async () => {
+      setIsLoading(true);
       try {
         const response = await fetch("/api/leaderboard");
         if (!response.ok) {
@@ -30,7 +38,7 @@ export default function Leaderboard() {
     };
 
     fetchLeaderboard();
-  }, []);
+  }, [isVerified, builderScore]);
 
   if (isLoading) {
     return (

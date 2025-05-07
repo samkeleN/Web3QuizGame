@@ -25,6 +25,5 @@ export const useVerification = () => {
 
     fetchIsVerified();
   }, [address]);
-
   return { isVerified, setIsVerified, isLoading };
 };

@@ -1,3 +1,4 @@
+import { Console } from "console";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "~/lib/db";
 
@@ -80,7 +81,6 @@ export async function GET(
           },
         },
       });
-
       return NextResponse.json({ score, rank: rank + 1 }, { status: 200 });
     }
     const rank = await prisma.builderProfile.count({
@@ -90,7 +90,6 @@ export async function GET(
         },
       },
     });
-
     return NextResponse.json({ score, rank: rank + 1 }, { status: 200 });
   } catch (error) {
     console.error("Error fetching builder score:", error);

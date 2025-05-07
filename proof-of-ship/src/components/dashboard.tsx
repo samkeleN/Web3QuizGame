@@ -119,7 +119,7 @@ export default function Dashboard() {
       <div className="max-h-screen flex flex-col items-center justify-center p-4 w-full">
         <div className="w-full max-w-md mx-auto py-8 px-6 bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 relative">
           <h1
-            className={`text-4xl font-extrabold text-center text-white drop-shadow-lg tracking-wide mb-6 ${londrina.className}`}
+            className={`text-3xl font-bold text-center text-white ${londrina.className}`}
           >
             PROOF OF SHIP
           </h1>
@@ -137,10 +137,10 @@ export default function Dashboard() {
                     <SelfQRcodeWrapper
                       selfApp={selfApp}
                       onSuccess={async () => {
-                        setIsVerified(true);
                         await fetch(`/api/builder-score/${address}`, {
                           method: "POST",
                         });
+                        setIsVerified(true);
                         if (address) {
                           await refetchBuilderScore();
                         }
@@ -170,7 +170,10 @@ export default function Dashboard() {
               <div className="flex justify-end items-center mb-4">
                 <Countdown />
               </div>
-              <Leaderboard />
+              <Leaderboard
+                isVerified={isVerified}
+                builderScore={builderScore || 0}
+              />
             </>
           )}
         </div>
