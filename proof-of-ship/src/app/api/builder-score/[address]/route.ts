@@ -1,4 +1,3 @@
-import { Console } from "console";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "~/lib/db";
 
