@@ -19,7 +19,7 @@ const frame = {
       type: "launch_frame",
       name: "Proof of Ship",
       url: appUrl,
-      splashImageUrl: `${appUrl}/celosplash.png`,
+      splashImageUrl: `${appUrl}/splash.png`,
       splashBackgroundColor: "#f7f7f7",
     },
   },
