@@ -40,15 +40,14 @@ export default function Leaderboard({
     fetchLeaderboard();
   }, [isVerified, builderScore]);
 
-  if (isLoading) {
-    return (
-      <div className="bg-[#1C1C1E] text-white p-6 rounded-xl">
-        <h2 className="text-2xl font-bold mb-6">Leaderboard</h2>
-        <div className="space-y-4">
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="space-y-4 h-[400px]">
           {Array.from({ length: 5 }).map((_, i) => (
             <div
               key={`skeleton-${i}-${Date.now()}`}
-              className="flex items-center justify-between p-3 bg-[#2C2C2E] rounded-lg animate-pulse"
+              className="flex items-center justify-between p-3 bg-[#2C2C2E] rounded-lg animate-pulse h-[72px]"
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-gray-700" />
@@ -61,22 +60,30 @@ export default function Leaderboard({
             </div>
           ))}
         </div>
-      </div>
-    );
-  }
+      );
+    }
 
-  if (error) {
-    return <div className="text-center text-red-500 p-4">{error}</div>;
-  }
+    if (error) {
+      return (
+        <div className="text-center text-red-500 p-4 h-[400px] flex items-center justify-center">
+          {error}
+        </div>
+      );
+    }
 
-  return (
-    <div className="bg-[#1C1C1E] text-white p-6 rounded-xl">
-      <h2 className="text-2xl font-bold mb-6">Leaderboard</h2>
-      <div className="space-y-4">
+    return (
+      <div className="space-y-4 h-[400px] overflow-y-auto">
         {builders.map((builder, index) => (
           <LeaderboardItem key={builder.id} builder={builder} index={index} />
         ))}
       </div>
+    );
+  };
+
+  return (
+    <div className="bg-[#1C1C1E] text-white p-6 rounded-xl w-full max-w-xl mx-auto">
+      <h2 className="text-2xl font-bold mb-6">Leaderboard</h2>
+      {renderContent()}
     </div>
   );
 }
