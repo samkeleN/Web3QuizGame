@@ -18,6 +18,7 @@ export async function POST(req: NextRequest) {
       // Get the current URL from the request
       const url = new URL(req.url);
       const baseUrl = `${url.protocol}//${url.host}`;
+      console.log("baseUrl", baseUrl);
 
       const selfBackendVerifier = new SelfBackendVerifier(
         "proof-of-ship-scope",

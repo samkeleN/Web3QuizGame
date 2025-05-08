@@ -106,6 +106,7 @@ export default function Dashboard() {
     userIdType: "hex",
     endpointType: "https",
   }).build();
+  console.log("selfApp", selfApp);
   return (
     <div
       style={{
