@@ -6,9 +6,12 @@ export async function GET() {
 
   const config = {
     accountAssociation: {
-      header: "",
-      payload: "",
-      signature: "",
+      header:
+        "eyJmaWQiOjEwNTgyODcsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHhlMEQ5NWUyZERhMmVjNzQzNDllQ2QwNDkzMjJGMzU1OTVDMDQzYTY4In0",
+      payload:
+        "eyJkb21haW4iOiJjZWxvLWZhcmNhc3Rlci1mcmFtZXMtZml2ZS52ZXJjZWwuYXBwIn0",
+      signature:
+        "MHg1ZGVjYzA2ZjMyNzlkYTI2NzA4NzdmZTdmZDg3YTgxMjA3MTc4ZGVhYjVmOWUxNmI0OTc3ZGFkYTM0ZTk3MzQ5NGM2YTgxNTk5MTczODEwNGMwMTZlMmY2ZTcxZWE0MDE0NDI5N2YyYTg3Njk3ODRkYjZmNzE5ZTEwMDQ0NDI3YTFj",
     },
     frame: {
       version: "1",
