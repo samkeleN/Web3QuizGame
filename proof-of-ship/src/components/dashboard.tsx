@@ -65,14 +65,16 @@ export default function Dashboard() {
     }
   }, [isVerified, refetchBuilderScore]);
 
-  const selfApp = new SelfAppBuilder({
-    appName: "Proof of ship",
-    scope: "proof-of-ship-scope",
-    endpoint: `${window.location.origin}/api/verify`,
-    userId: address,
-    userIdType: "hex",
-    endpointType: "https",
-  }).build();
+  const selfApp = address
+    ? new SelfAppBuilder({
+        appName: "Proof of ship",
+        scope: "proof-of-ship-scope",
+        endpoint: `${window.location.origin}/api/verify`,
+        userId: address,
+        userIdType: "hex",
+        endpointType: "https",
+      }).build()
+    : null;
   console.log("selfApp", selfApp);
 
   const renderContent = () => {
