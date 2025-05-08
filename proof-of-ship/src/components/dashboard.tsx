@@ -101,7 +101,7 @@ export default function Dashboard() {
   const selfApp = new SelfAppBuilder({
     appName: "Proof of ship",
     scope: "proof-of-ship-scope",
-    endpoint: `${process.env.NEXT_PUBLIC_URL}api/verify`,
+    endpoint: `${window.location.origin}/api/verify`,
     userId: address,
     userIdType: "hex",
     endpointType: "https",
