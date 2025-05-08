@@ -9,7 +9,7 @@ const appUrl = process.env.NEXT_PUBLIC_URL;
 const frame = {
   version: "next",
   // This is the image displayed when sharing the link.
-  imageUrl: `${appUrl}/tipme.png`,
+  imageUrl: `${appUrl}/splash.png`,
   // Loading image that will be shown while the frame is loading
   loadingImageUrl: `${appUrl}/loading.gif`,
   // This is the button displayed when sharing the link.
