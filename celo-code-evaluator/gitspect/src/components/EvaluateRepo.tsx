@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent, useEffect } from "react";
+import { useCallback, useState, FormEvent, useEffect } from "react";
 import {
   useSendTransaction,
   useAccount,
@@ -11,27 +11,21 @@ import { parseEther } from "viem";
 import { AuditResult } from "../../types/audit";
 import { auditRepository } from "../../services/auditService";
 import { celo } from "wagmi/chains";
+import sdk from "@farcaster/frame-sdk";
 
 export default function EvaluateRepo() {
   const { isConnected } = useAccount();
   const {
     data: hash,
     sendTransaction,
-    error: sendTxError,
-    isError: isSendTxError,
     isPending: isPaymentProcessing,
   } = useSendTransaction();
 
-  const {
-    switchChain,
-    isError: isSwitchChainError,
-    isPending: isSwitchChainPending,
-  } = useSwitchChain();
+  const { switchChain } = useSwitchChain();
 
-  const { isLoading: isConfirming, isSuccess: isConfirmed } =
-    useWaitForTransactionReceipt({
-      hash,
-    });
+  const { isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+    hash,
+  });
 
   const [githubUrl, setGithubUrl] = useState<string>("");
   const [auditResult, setAuditResult] = useState<AuditResult | null>(null);
@@ -65,7 +59,7 @@ export default function EvaluateRepo() {
       setError("Please enter a valid GitHub repository URL");
       return;
     }
-
+    setIsAwaitingPayment(true);
     try {
       setIsProcessing(true);
 
@@ -77,9 +71,11 @@ export default function EvaluateRepo() {
         to: "0xC00DA57cDE8dcB4ED4a8141784B5B4A5CBf62551",
         value: parseEther("0.01"),
       });
+      setIsAwaitingPayment(false);
     } catch (err) {
       console.error("Error:", err);
       setError(err instanceof Error ? err.message : "Transaction failed");
+      setIsAwaitingPayment(false);
       setIsProcessing(false);
     }
   };
@@ -94,6 +90,26 @@ export default function EvaluateRepo() {
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const openWarpcastUrl = useCallback(() => {
+    sdk.actions.composeCast({
+      text: `Review a Celo project! `,
+      embeds: ["https://lazy-symbols-sit.loca.lt/"],
+    });
+    //sdk.actions.close();
+    //sdk.actions.openUrl("https://warpcast.com/~/compose");
+  }, []);
+
+  const shareAuditResult = async () => {
+    if (!auditResult) return;
+    await sdk.actions.composeCast({
+      text:
+        `I just reviewed ${auditResult?.repoName} on Celo! \n` +
+        `Overall Score: ${auditResult?.score}/10\n`,
+      embeds: ["https://lazy-symbols-sit.loca.lt/"],
+    });
+    //sdk.actions.openUrl("https://warpcast.com/~/compose");
   };
 
   const toggleCriteria = (name: string) => {
@@ -307,6 +323,14 @@ export default function EvaluateRepo() {
             >
               Audit Another Repository
             </button>
+            <button
+              onClick={() => {
+                shareAuditResult();
+              }}
+              className={`w-full mt-4 py-3 px-4 rounded-lg font-medium transition bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-md`}
+            >
+              Share Audit Result
+            </button>
           </div>
         )}
 
@@ -316,6 +340,14 @@ export default function EvaluateRepo() {
             requires a 0.01 CELO fee.
           </p>
         </div>
+        <button
+          onClick={() => {
+            openWarpcastUrl();
+          }}
+          className={`w-full mt-4 py-3 px-4 rounded-lg font-medium transition bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-md`}
+        >
+          Share GitInspect
+        </button>
       </div>
     </div>
   );
