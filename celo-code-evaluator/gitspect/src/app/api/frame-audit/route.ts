@@ -5,14 +5,17 @@ export async function POST(req: Request) {
     const { github_urls } = await req.json();
 
     // Forward to the audit service
-    const auditResponse = await fetch("http://127.0.0.1:8000/analyze", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        github_urls: github_urls,
-        prompt: "prompts/celo.txt",
-      }),
-    });
+    const auditResponse = await fetch(
+      "https://celo-hackathon-agent.vercel.app/analyze",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          github_urls: github_urls,
+          prompt: "prompts/celo.txt",
+        }),
+      }
+    );
 
     const data = await auditResponse.json();
 
