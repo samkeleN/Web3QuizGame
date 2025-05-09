@@ -1,36 +1,93 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# KarmaGAP Endorsement Frame
 
-## Getting Started
+This project is a simple frontend built with **Next.js** that dynamically fetches and displays project data from the **KarmaGAP API** using the URL slug. It includes interactive UI components like buttons for "Tip", "Learn More", "Endorse", and "Next Project", and conditionally renders an endorsement form.
 
-First, run the development server:
+> This is a work-in-progress toward supporting a Farcaster V2 Frame.
+
+---
+
+## 🔧 Features
+
+- Fetches real KarmaGAP project data from `https://gapapi.karmahq.xyz/projects/[slug]`
+- Displays title, description, and placeholder image
+- Conditionally shows an endorsement form
+- Beautiful and responsive UI with vanilla CSS
+- Built with **Next.js 13+ App Router**
+
+---
+
+## 📁 Project Structure
+
+```
+
+/app
+├── project
+│   └── \[slug]
+│       └── page.tsx       # Project details page
+
+/globals.css                # Global CSS styles
+/public/default-image.png   # Placeholder image
+
+````
+
+---
+
+## 🚀 Getting Started
+
+### 1. Clone the Repo
+
+```bash
+git clone [https://github.com/yourusername/karma-gap-viewer.git](https://github.com/RuthChisom/celo-farcaster-frames.git)](https://github.com/RuthChisom/celo-farcaster-frames.git)
+cd celo-farcaster-frames/karma-gap-endorsement-frame
+````
+
+### 2. Install Dependencies
+
+```bash
+npm install
+# or
+yarn
+```
+
+### 3. Run Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then open:
+👉 `http://localhost:3000/project/canvassing`
+Replace `canvassing` with any valid KarmaGAP project slug.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🧠 How It Works
 
-## Learn More
+* Uses `usePathname()` to get the slug from the URL
+* Fetches project data from KarmaGAP API on mount
+* Renders project details or a loading state
+* Hides the endorsement form until the user clicks the "Endorse" button
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🧪 To Do (Future Enhancements)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+* Add OG meta route for Farcaster V2 frame support (`/project-frame/[slug]/route.ts`)
+* Implement a `/api/frame-handler` POST route for frame interactions
+* Generate dynamic OG images for Farcaster preview
+* Add backend storage or DB for endorsements
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🙋‍♀️ Author
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Built by **Ruth Chisom**, a web developer, mom in tech, and Web3 enthusiast.
+
+* Twitter: [@Techy_Chisom](https://twitter.com/thischisom)
+* Medium: [medium.com/@techychisom](https://medium.com/@techychisom)
+
+---
+
+## 📝 License
+
+MIT License
