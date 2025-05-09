@@ -37,7 +37,7 @@ This project is a simple frontend built with **Next.js** that dynamically fetche
 ### 1. Clone the Repo
 
 ```bash
-git clone [https://github.com/yourusername/karma-gap-viewer.git](https://github.com/RuthChisom/celo-farcaster-frames.git)](https://github.com/RuthChisom/celo-farcaster-frames.git)
+git clone [https://github.com/RuthChisom/celo-farcaster-frames.git](https://github.com/RuthChisom/celo-farcaster-frames.git)
 cd celo-farcaster-frames/karma-gap-endorsement-frame
 ````
 
@@ -54,10 +54,6 @@ yarn
 ```bash
 npm run dev
 ```
-
-Then open:
-👉 `http://localhost:3000/project/canvassing`
-Replace `canvassing` with any valid KarmaGAP project slug.
 
 ---
 
