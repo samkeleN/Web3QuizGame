@@ -69,7 +69,11 @@ Replace `canvassing` with any valid KarmaGAP project slug.
 * Hides the endorsement form until the user clicks the "Endorse" button
 
 ---
+## Testing the Frame
 
+Here’s the link to this template: [KarmaGap Endorsement Frame](https://celo-farcaster-frames-phi.vercel.app/)
+
+---
 ## 🧪 To Do (Future Enhancements)
 
 * Add OG meta route for Farcaster V2 frame support (`/project-frame/[slug]/route.ts`)
@@ -83,11 +87,5 @@ Replace `canvassing` with any valid KarmaGAP project slug.
 
 Built by **Ruth Chisom**, a web developer, mom in tech, and Web3 enthusiast.
 
-* Twitter: [@Techy_Chisom](https://twitter.com/thischisom)
+* Twitter: [@Techy Chisom](https://twitter.com/thischisom)
 * Medium: [medium.com/@techychisom](https://medium.com/@techychisom)
-
----
-
-## 📝 License
-
-MIT License
