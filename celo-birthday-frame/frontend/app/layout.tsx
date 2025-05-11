@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "@farcaster/auth-kit/styles.css";
 import "./globals.css";
 import { Providers } from "./providers";
-import { headers } from 'next/headers'
+import { headers } from "next/headers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,12 +25,14 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
   const headersData = await headers();
-  const cookies = headersData.get('cookie');
+  const cookies = headersData.get("cookie");
 
   return (
     <html lang="en">
+      <head>
+        <link rel="preload" href="/globals.css" as="style" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

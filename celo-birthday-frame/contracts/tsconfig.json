@@ -7,5 +7,10 @@
     "strict": true,
     "skipLibCheck": true,
     "resolveJsonModule": true
-  }
+  },
+  "types": [
+    "@types/istanbul-lib-coverage",
+    "@types/istanbul-reports",
+    "@types/stack-utils"
+  ]
 }
