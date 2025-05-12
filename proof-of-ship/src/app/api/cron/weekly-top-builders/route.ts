@@ -2,7 +2,7 @@ import { prisma } from "~/lib/db";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { ethers } from "ethers";
-import BuilderTokenArtifact from "../../../../../token/artifacts/contracts/SHIPRToken.sol/SHIPRToken.json";
+import BuilderTokenArtifact from "../../../../contracts/SHIPRToken.json";
 
 dayjs.extend(utc);
 
