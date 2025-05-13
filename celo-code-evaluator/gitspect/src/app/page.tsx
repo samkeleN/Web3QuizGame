@@ -10,7 +10,7 @@ const iconUrl = `${appUrl}/icon.png`;
 
 const framePreviewMetadata = {
   version: "next",
-  imageUrl: `${appUrl}/opengraph-image`,
+  imageUrl: `${appUrl}/splash.png`,
   button: {
     title: process.env.NEXT_PUBLIC_FRAME_BUTTON_TEXT,
     action: {
@@ -19,7 +19,7 @@ const framePreviewMetadata = {
       url: appUrl,
       splashImageUrl,
       iconUrl,
-      splashBackgroundColor: "#f7f7f7",
+      splashBackgroundColor: "#000000",
     },
   },
 };
@@ -40,5 +40,5 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function Home() {
-  return (<App />);
+  return <App />;
 }
