@@ -91,6 +91,14 @@ uv run main.py \
   --log-level INFO
 ```
 
+## Running the FastAPI Server
+
+To run the FastAPI server, use the following command:
+
+```bash
+uvicorn api:app --reload  # FastAPI
+```
+
 ## Available Models
 
 - `gemini-2.0-flash-lite`: Balanced model suitable for most use cases
@@ -113,21 +121,25 @@ The tool comes with:
 All analyses include scores for these standard criteria:
 
 1. **Security** (0-100)
+
    - Authentication & authorization
    - Data validation
    - Vulnerability prevention
 
 2. **Functionality & Correctness** (0-100)
+
    - Core functionality implementation
    - Error handling
    - Edge case management
 
 3. **Readability & Understandability** (0-100)
+
    - Code style consistency
    - Documentation quality
    - Naming conventions
 
 4. **Dependencies & Setup** (0-100)
+
    - Dependencies management
    - Installation process
    - Configuration approach
@@ -173,6 +185,10 @@ When analyzing multiple repositories, a summary report is automatically generate
 - Comparison table of all repository scores
 - Average scores across all analyzed repositories
 - Links to individual reports
+
+## Code Attribution
+
+This project is mainly modified from [Celo Hackathon Agent](https://github.com/celo-org/hackathon-agent) by the Celo Team.
 
 ## License
 
