@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { parseEther } from 'ethers';
-import { getTipJarContract } from '../../../utils/contract'; // Adjust path as needed
+import { getTipJarContract } from '../../../utils/contract'; 
 import '../../globals.css';
 
 declare global {
@@ -64,8 +64,8 @@ export default function ProjectPage() {
         });
       }
 
-      const chain = await window.ethereum.request({ method: 'eth_chainId' });
-      console.log("✅ Current Chain ID:", chain); // should be '0xaef3'
+      // const chain = await window.ethereum.request({ method: 'eth_chainId' });
+      // console.log("✅ Current Chain ID:", chain); // should be '0xaef3'
 
   
       const contract = await getTipJarContract();
@@ -75,7 +75,7 @@ export default function ProjectPage() {
       }
   
       setIsTipping(true);
-      console.log("Tipping slug:", slug);
+      // console.log("Tipping slug:", slug);
       const tx = await contract.tipInCelo(slug, {
         value: parseEther("0.0001"),
       });
@@ -83,8 +83,12 @@ export default function ProjectPage() {
   
       alert("✅ Tip sent successfully!");
     } catch (err: any) {
+      if (err?.code === "CALL_EXCEPTION" && err?.message?.includes("missing revert data")) {
+        alert("❌ Not enough CELO to send tip.");
+      } else {
+        alert("❌ Failed to tip: " + (err?.message || "Unknown error"));
+      }
       console.error("❌ Error:", err);
-      alert("❌ Failed to tip: " + (err?.message || "Unknown error"));
     } finally {
       setIsTipping(false);
     }
