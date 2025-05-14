@@ -2,7 +2,15 @@
 
 import React, { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { parseEther } from 'ethers';
+import { getTipJarContract } from '../../../utils/contract'; // Adjust path as needed
 import '../../globals.css';
+
+declare global {
+  interface Window {
+    ethereum?: any;
+  }
+}
 
 export default function ProjectPage() {
   const [project, setProject] = useState<any>(null);
@@ -10,6 +18,7 @@ export default function ProjectPage() {
   const slug = pathname?.split('/').pop();
   const [showEndorseForm, setShowEndorseForm] = useState(false);
   const [endorsement, setEndorsement] = useState('');
+  const [isTipping, setIsTipping] = useState(false);
 
   useEffect(() => {
     if (!slug) return;
@@ -27,19 +36,70 @@ export default function ProjectPage() {
     fetchProject();
   }, [slug]);
 
-  console.log("project is:", project)
-  // const projectDetails = project.details.data;
+  const handleTip = async () => {
+    try {
+      if (!window.ethereum) {
+        alert("Please install MetaMask.");
+        return;
+      }
+  
+      // Check and switch to Alfajores if needed
+      const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
+      const targetChainId = '0xaef3'; // Celo Alfajores chainId in hex
+  
+      if (currentChainId !== targetChainId) {
+        await window.ethereum.request({
+          method: "wallet_addEthereumChain",
+          params: [{
+            chainId: targetChainId,
+            chainName: "Celo Alfajores",
+            nativeCurrency: {
+              name: "CELO",
+              symbol: "CELO",
+              decimals: 18,
+            },
+            rpcUrls: ["https://alfajores-forno.celo-testnet.org"],
+            blockExplorerUrls: ["https://alfajores.celoscan.io"],
+          }],
+        });
+      }
+
+      const chain = await window.ethereum.request({ method: 'eth_chainId' });
+      console.log("✅ Current Chain ID:", chain); // should be '0xaef3'
+
+  
+      const contract = await getTipJarContract();
+      if (!contract) {
+        alert("Contract connection failed.");
+        return;
+      }
+  
+      setIsTipping(true);
+      console.log("Tipping slug:", slug);
+      const tx = await contract.tipInCelo(slug, {
+        value: parseEther("0.0001"),
+      });
+      await tx.wait();
+  
+      alert("✅ Tip sent successfully!");
+    } catch (err: any) {
+      console.error("❌ Error:", err);
+      alert("❌ Failed to tip: " + (err?.message || "Unknown error"));
+    } finally {
+      setIsTipping(false);
+    }
+  };
+  
+  
+
   if (!project || !project.details || !project.details.data) {
     return <p className="loading">Loading project...</p>;
   }
-  
-  const projectDetails = project.details.data;
-  
 
+  const projectDetails = project.details.data;
   const title = projectDetails?.title || slug || 'Untitled Project';
   const description = projectDetails?.description || 'No mission statement provided.';
   const projectLink = `https://gap.karmahq.xyz/project/${slug}`;
-  const imageUrl = '/default-image.png'; 
 
   function handleEndorse() {
     if (!endorsement.trim()) {
@@ -50,45 +110,44 @@ export default function ProjectPage() {
     setEndorsement('');
   }
 
-
   return (
     <div className="project-container">
-  <h1 className="project-title">{title}</h1>
-  <img src="https://via.placeholder.com/300" alt="Project visual" className="project-image" />
-  <p className="project-description">{description}</p>
+      <h1 className="project-title">{title}</h1>
+      <img src="https://via.placeholder.com/300" alt="Project visual" className="project-image" />
+      <p className="project-description">{description}</p>
 
-  <div className="button-row">
-    <button className="button tip">💸 Tip</button>
-    <a href={projectLink} target="_blank" rel="noopener noreferrer" className="button secondary">
-      🔗 Learn More
-    </a>
-  </div>
-  <div className="button-row">
-    <button className="button endorse" onClick={() => setShowEndorseForm(!showEndorseForm)}>
-      📝 Endorse
-    </button>
+      <div className="button-row">
+        <button className="button tip" onClick={handleTip} disabled={isTipping}>
+          {isTipping ? "Tipping..." : "💸 Tip 0.0001 CELO"}
+        </button>
+        <a href={projectLink} target="_blank" rel="noopener noreferrer" className="button secondary">
+          🔗 Learn More
+        </a>
+      </div>
 
-    <button className="button">➡️ Next Project</button>
-  </div>
+      <div className="button-row">
+        <button className="button endorse" onClick={() => setShowEndorseForm(!showEndorseForm)}>
+          📝 Endorse
+        </button>
 
-  {showEndorseForm && (
-  <div className="input-box">
-    <label htmlFor="endorsement">Endorse this project:</label>
-    <textarea
-      id="endorsement"
-      rows={3}
-      placeholder="Write a short endorsement..."
-      value={endorsement}
-      onChange={(e) => setEndorsement(e.target.value)}
-    />
-    <button className="button endorse" onClick={handleEndorse}>
-      ✅ Submit Endorsement
-    </button>
-  </div>
-)}
+        <button className="button">➡️ Next Project</button>
+      </div>
 
-
-</div>
-
+      {showEndorseForm && (
+        <div className="input-box">
+          <label htmlFor="endorsement">Endorse this project:</label>
+          <textarea
+            id="endorsement"
+            rows={3}
+            placeholder="Write a short endorsement message..."
+            value={endorsement}
+            onChange={(e) => setEndorsement(e.target.value)}
+          />
+          <button className="button endorse" onClick={handleEndorse}>
+            ✅ Submit Endorsement
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
