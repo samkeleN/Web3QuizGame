@@ -19,6 +19,8 @@ export default function ProjectPage() {
   const [showEndorseForm, setShowEndorseForm] = useState(false);
   const [endorsement, setEndorsement] = useState('');
   const [isTipping, setIsTipping] = useState(false);
+  const [networkName, setNetworkName] = useState('');
+
 
   useEffect(() => {
     if (!slug) return;
@@ -33,8 +35,8 @@ export default function ProjectPage() {
       }
     }
 
-    fetchProject();
-  }, [slug]);
+      fetchProject();
+    }, [slug]);
 
   const handleTip = async () => {
     try {
@@ -45,21 +47,37 @@ export default function ProjectPage() {
   
       // Check and switch to Alfajores if needed
       const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
-      const targetChainId = '0xaef3'; // Celo Alfajores chainId in hex
+      // const targetChainId = '0xaef3'; // Celo Alfajores testnet chainId in hex
+      const targetChainId = '0xa4ec'; // Celo mainnet chainId in hex
   
       if (currentChainId !== targetChainId) {
+        // await window.ethereum.request({
+        //   method: "wallet_addEthereumChain",
+        //   params: [{
+        //     chainId: targetChainId,
+        //     chainName: "Celo Alfajores",
+        //     nativeCurrency: {
+        //       name: "CELO",
+        //       symbol: "CELO",
+        //       decimals: 18,
+        //     },
+        //     rpcUrls: ["https://alfajores-forno.celo-testnet.org"],
+        //     blockExplorerUrls: ["https://alfajores.celoscan.io"],
+        //   }],
+        // });
+
         await window.ethereum.request({
           method: "wallet_addEthereumChain",
           params: [{
             chainId: targetChainId,
-            chainName: "Celo Alfajores",
+            chainName: "Celo Mainnet",
             nativeCurrency: {
               name: "CELO",
               symbol: "CELO",
               decimals: 18,
             },
-            rpcUrls: ["https://alfajores-forno.celo-testnet.org"],
-            blockExplorerUrls: ["https://alfajores.celoscan.io"],
+            rpcUrls: ["https://forno.celo.org"],
+            blockExplorerUrls: ["https://celoscan.io"],
           }],
         });
       }
@@ -116,6 +134,11 @@ export default function ProjectPage() {
 
   return (
     <div className="project-container">
+      {networkName && (
+        <p className="network-status">
+          🌐 Connected to: <strong>{networkName}</strong>
+        </p>
+      )}
       <h1 className="project-title">{title}</h1>
       <img src="https://via.placeholder.com/300" alt="Project visual" className="project-image" />
       <p className="project-description">{description}</p>

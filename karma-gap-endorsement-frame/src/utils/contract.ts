@@ -1,7 +1,8 @@
 import { BrowserProvider, Contract, type InterfaceAbi } from 'ethers';
 import TipJarJson from "../abi/TipJar.json";
 
-const TIPJAR_ADDRESS = "0xdB558B27EF3C75230905d6bcAdFb61Bf9e77f000";
+// const TIPJAR_ADDRESS = "0xdB558B27EF3C75230905d6bcAdFb61Bf9e77f000"; //testnet
+const TIPJAR_ADDRESS = "0xdB558B27EF3C75230905d6bcAdFb61Bf9e77f000";  //mainnet
 
 export const getTipJarContract = async () => {
   if (typeof window === "undefined") return null;
