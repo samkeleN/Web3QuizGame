@@ -132,8 +132,10 @@ function QuizPage() {
   ) => {
     setSelectedAnswer(selectedIndex);
 
+    let newScore = score;
     if (isCorrect) {
-      setScore(score + 1);
+      newScore = score + 1;
+      setScore(newScore);
     }
 
     setTimeout(() => {
@@ -146,8 +148,7 @@ function QuizPage() {
         ); // Reset timer based on difficulty
       } else {
         setShowScore(true);
-
-        // Include the user's wallet address in the quiz submission request
+        // Submit quiz results with correct score and answers
         fetch("/api/verify", {
           method: "POST",
           headers: {
@@ -155,15 +156,13 @@ function QuizPage() {
           },
           body: JSON.stringify({
             quizId: "exampleQuizId",
-            answers: questions.map((q, index) => ({
-              answer:
-                index === currentQuestion
-                  ? isCorrect
-                    ? "correct"
-                    : "incorrect"
-                  : null,
-            })),
-            score,
+            answers: questions.map((q, idx) => {
+              const selected = idx === currentQuestion ? selectedIndex : null;
+              return selected !== null
+                ? q.answerOptions[selected].answerText
+                : null;
+            }),
+            score: isCorrect ? score + 1 : score,
             userId: walletAddress, // Pass the wallet address as userId
           }),
         })

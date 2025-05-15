@@ -702,7 +702,7 @@ export const IERC20Abi = [
 ];
 
 // Update this address to your deployed QuizReward contract address
-export const QuizRewardAddress = "0x4c2be32a6Fd1850336D4fF695bfD586f49b4C04f";
+export const QuizRewardAddress = "0x75773973192c90075eB87A271A601b2468732411";
 
 // Update this ABI to match your deployed QuizReward contract
 export const QuizRewardABI = [
@@ -723,6 +723,35 @@ export const QuizRewardABI = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "tokenId",
+        type: "uint256",
+      },
+    ],
+    name: "tokenURI",
+    outputs: [
+      {
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: "address", name: "from", type: "address" },
+      { indexed: true, internalType: "address", name: "to", type: "address" },
+      { indexed: true, internalType: "uint256", name: "tokenId", type: "uint256" },
+    ],
+    name: "Transfer",
+    type: "event",
   },
   // ...add any other functions/events from your deployed QuizReward ABI if needed...
 ];
