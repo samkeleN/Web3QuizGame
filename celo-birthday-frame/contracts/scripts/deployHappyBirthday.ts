@@ -2,7 +2,16 @@ import { ethers } from "hardhat";
 import { hashEndpointWithScope } from "@selfxyz/core";
 
 async function main() {
-  const [deployer] = await ethers.getSigners();
+  const signers = await ethers.getSigners();
+  if (!signers || signers.length === 0) {
+    throw new Error("No signers available. Ensure your environment is properly configured.");
+  }
+
+  const [deployer] = signers;
+  if (!deployer || !deployer.address) {
+    throw new Error("Deployer address is undefined. Check your Hardhat configuration and environment variables.");
+  }
+
   console.log("Deploying contracts with the account:", deployer.address);
 
   const nonce = await ethers.provider.getTransactionCount(deployer.address);

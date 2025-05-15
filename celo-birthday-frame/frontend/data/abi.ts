@@ -700,3 +700,24 @@ export const IERC20Abi = [
     type: "function",
   },
 ];
+
+export const QuizRewardABI = [
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "recipient",
+        type: "address",
+      },
+      {
+        internalType: "string",
+        name: "tokenURI",
+        type: "string",
+      },
+    ],
+    name: "mintReward",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+];

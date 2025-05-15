@@ -2,6 +2,19 @@ import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 require("dotenv").config();
 import "@nomicfoundation/hardhat-ignition-ethers";
+import dotenv from "dotenv";
+dotenv.config();
+import { task } from "hardhat/config";
+
+// Define a custom task to list accounts
+task("accounts", "Prints the list of accounts", async (args, hre) => {
+  const accounts = await hre.ethers.getSigners();
+
+  for (const account of accounts) {
+    console.log(account.address);
+  }
+});
+
 const config: HardhatUserConfig = {
   solidity: {
     version: "0.8.28",
@@ -30,7 +43,7 @@ const config: HardhatUserConfig = {
     celo: {
       chainId: 42220,
       url: process.env.CELO_RPC_URL || "https://forno.celo.org",
-      accounts: [process.env.CELO_KEY as string],
+      accounts: process.env.CELO_KEY ? [process.env.CELO_KEY] : [],
     },
     hardhat: process.env.FORK_TESTNET
       ? {
@@ -43,7 +56,7 @@ const config: HardhatUserConfig = {
       chainId: 44787,
       url:
         process.env.CELO_TESTNET_RPC_URL || "https://celo-alfajores.drpc.org",
-      accounts: [process.env.CELO_KEY as string],
+      accounts: process.env.CELO_KEY ? [process.env.CELO_KEY] : [],
     },
   },
   etherscan: {

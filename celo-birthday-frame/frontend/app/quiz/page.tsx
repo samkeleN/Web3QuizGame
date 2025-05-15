@@ -190,6 +190,34 @@ function QuizPage() {
     setTimeLeft(level === "hard" ? 3 : level === "medium" ? 5 : 14);
   };
 
+  const claimReward = async () => {
+    try {
+      const response = await fetch("/api/reward", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          walletAddress: walletAddress,
+          score: score,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        alert(
+          "Reward claimed successfully! Transaction Hash: " +
+            data.transactionHash
+        );
+      } else {
+        alert("Failed to claim reward.");
+      }
+    } catch (error) {
+      console.error("Error claiming reward:", error);
+      alert("An error occurred while claiming the reward.");
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#2D0C72] text-white">
@@ -256,6 +284,12 @@ function QuizPage() {
             >
               Go to Homepage
             </button>
+            <button
+              onClick={() => claimReward()}
+              className="bg-green-500 hover:bg-green-400 text-white font-semibold py-3 px-4 rounded-xl text-lg transition-all shadow-md transform hover:scale-105"
+            >
+              Claim Reward
+            </button>
           </div>
         </div>
       ) : (
@@ -294,6 +328,35 @@ function QuizPage() {
             )}
         </div>
       )}
+      {/* Function to handle claiming rewards */}
+      <script>
+        {`
+          async function claimReward() {
+            try {
+              const response = await fetch('/api/reward', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  walletAddress: '${walletAddress}',
+                  score: ${score},
+                }),
+              });
+
+              const data = await response.json();
+              if (data.success) {
+                alert('Reward claimed successfully! Transaction Hash: ' + data.transactionHash);
+              } else {
+                alert('Failed to claim reward.');
+              }
+            } catch (error) {
+              console.error('Error claiming reward:', error);
+              alert('An error occurred while claiming the reward.');
+            }
+          }
+        `}
+      </script>
     </div>
   );
 }
