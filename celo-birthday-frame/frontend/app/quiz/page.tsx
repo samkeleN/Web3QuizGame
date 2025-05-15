@@ -6,6 +6,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useAppKitAccount } from "@reown/appkit/react";
 
 function QuizPage() {
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -14,8 +15,8 @@ function QuizPage() {
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [timeLeft, setTimeLeft] = useState(14); // Default to easy difficulty
   const [difficulty, setDifficulty] = useState("");
-  const [walletAddress, setWalletAddress] = useState("user-wallet-address"); // Placeholder for user's wallet address
   const [loading, setLoading] = useState(true);
+  const { address: walletAddress, isConnected } = useAppKitAccount();
 
   const questions = [
     {
@@ -191,6 +192,10 @@ function QuizPage() {
   };
 
   const claimReward = async () => {
+    if (!isConnected || !walletAddress) {
+      alert("Please connect your wallet to claim your reward.");
+      return;
+    }
     try {
       const response = await fetch("/api/reward", {
         method: "POST",

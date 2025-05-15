@@ -4,7 +4,11 @@ import { QuizRewardABI } from "../../data/abi"; // Ensure ABI is correctly expor
 const provider = new ethers.JsonRpcProvider(process.env.CELO_RPC_URL); // Updated to match ethers v6
 
 async function getSigner() {
-  return provider.getSigner();
+  const privateKey = process.env.PRIVATE_KEY;
+  if (!privateKey) {
+    throw new Error("PRIVATE_KEY is not defined in environment variables.");
+  }
+  return new ethers.Wallet(privateKey, provider);
 }
 
 const contractAddress = process.env.QUIZ_REWARD_CONTRACT_ADDRESS || ""; // Added fallback to empty string
@@ -27,6 +31,17 @@ export default async function handler(req: any, res: any) { // Explicitly typed 
     }
 
     try {
+      // Use the wallet address provided by the user (from verify step)
+      // This should be the user's actual wallet address, not a hardcoded or backend address
+      if (!ethers.isAddress(contractAddress)) {
+        console.error("Invalid contract address:", contractAddress);
+        return res.status(500).json({ error: "Invalid contract address" });
+      }
+      if (!ethers.isAddress(walletAddress)) {
+        console.error("Invalid wallet address:", walletAddress);
+        return res.status(400).json({ error: "Invalid wallet address" });
+      }
+      console.log("Minting to user wallet address (from verify):", walletAddress);
       const quizRewardContract = await getQuizRewardContract();
       const tokenURI = `https://example.com/metadata/${score}`; // Replace with actual metadata logic
       const tx = await quizRewardContract.mintReward(walletAddress, tokenURI);
