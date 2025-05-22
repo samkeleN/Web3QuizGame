@@ -7,6 +7,8 @@
 
 import React, { useState, useEffect } from "react";
 import { useAppKitAccount } from "@reown/appkit/react";
+import { QuizRewardAddress, QuizRewardABI } from "@/data/abi";
+import { ethers } from "ethers";
 
 function QuizPage() {
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -16,6 +18,10 @@ function QuizPage() {
   const [timeLeft, setTimeLeft] = useState(14); // Default to easy difficulty
   const [difficulty, setDifficulty] = useState("");
   const [loading, setLoading] = useState(true);
+  const [minting, setMinting] = useState(false);
+  const [mintSuccess, setMintSuccess] = useState(false);
+  const [mintError, setMintError] = useState("");
+  const [transactionHash, setTransactionHash] = useState("");
   const { address: walletAddress, isConnected } = useAppKitAccount();
 
   const questions = [
@@ -190,45 +196,108 @@ function QuizPage() {
     setTimeLeft(level === "hard" ? 3 : level === "medium" ? 5 : 14);
   };
 
-  const claimReward = async () => {
-    if (!isConnected || !walletAddress) {
-      alert("Please connect your wallet to claim your reward.");
-      return;
-    }
+  // Replace the backend claimReward logic with frontend minting
+  async function claimReward(tokenURI: string) {
+    setMinting(true);
+    setMintError("");
+    setTransactionHash("");
     try {
-      const response = await fetch("/api/reward", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          walletAddress: walletAddress,
-          score: score,
-        }),
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        alert(
-          "Reward claimed successfully! Transaction Hash: " +
-            data.transactionHash
+      if (!(window as any).ethereum) {
+        setMintError(
+          "No wallet found. Please install MetaMask or Celo Extension Wallet."
         );
-      } else {
-        alert("Failed to claim reward.");
+        setMinting(false);
+        return;
       }
-    } catch (error) {
-      console.error("Error claiming reward:", error);
-      alert("An error occurred while claiming the reward.");
+      await (window as any).ethereum.request({ method: "eth_requestAccounts" });
+      const provider = new ethers.BrowserProvider((window as any).ethereum);
+      const signer = await provider.getSigner();
+      const contract = new ethers.Contract(
+        QuizRewardAddress,
+        QuizRewardABI,
+        signer
+      );
+      // Use the connected wallet address as recipient
+      const recipient = await signer.getAddress();
+      const tx = await contract.mintReward(recipient, tokenURI);
+      setTransactionHash(tx.hash);
+      await tx.wait();
+      setMintSuccess(true);
+    } catch (error: any) {
+      setMintError(error?.message || "Failed to mint reward");
+    } finally {
+      setMinting(false);
     }
-  };
+  }
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#2D0C72] text-white">
-        <div className="text-center">
-          <div className="loader mb-4"></div>
-          <p>Loading...</p>
-        </div>
+      <div className="flex flex-col items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mb-6"></div>
+        <span className="text-white text-xl font-semibold">Loading...</span>
+      </div>
+    );
+  }
+  if (minting) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#2D0C72] w-full">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mb-6"></div>
+        <span className="text-white text-xl font-semibold">
+          Minting your reward...
+        </span>
+      </div>
+    );
+  }
+  if (mintSuccess) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#2D0C72] w-full text-white">
+        <h1 className="text-3xl font-bold mb-6">
+          Reward claimed successfully!
+        </h1>
+        {transactionHash && (
+          <button
+            className="mb-4 bg-green-600 hover:bg-green-500 text-white font-semibold py-2 px-4 rounded-xl text-lg transition-all shadow-md transform hover:scale-105"
+            onClick={() =>
+              window.open(
+                `https://alfajores.celoscan.io/tx/${transactionHash}`,
+                "_blank"
+              )
+            }
+          >
+            View Transaction on CeloScan
+          </button>
+        )}
+        <button
+          onClick={replayQuiz}
+          className="bg-gray-800 hover:bg-gray-700 text-white font-semibold py-3 px-4 rounded-xl text-lg transition-all shadow-md transform hover:scale-105 mr-4"
+        >
+          Replay Quiz
+        </button>
+        <button
+          onClick={() => (window.location.href = "/dashboard")}
+          className="bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 px-4 rounded-xl text-lg transition-all shadow-md transform hover:scale-105"
+        >
+          Go to Dashboard
+        </button>
+      </div>
+    );
+  }
+  if (mintError) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#2D0C72] w-full text-white">
+        <h1 className="text-3xl font-bold mb-6">{mintError}</h1>
+        <button
+          onClick={replayQuiz}
+          className="bg-gray-800 hover:bg-gray-700 text-white font-semibold py-3 px-4 rounded-xl text-lg transition-all shadow-md transform hover:scale-105 mr-4"
+        >
+          Replay Quiz
+        </button>
+        <button
+          onClick={() => (window.location.href = "/dashboard")}
+          className="bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 px-4 rounded-xl text-lg transition-all shadow-md transform hover:scale-105"
+        >
+          Go to Dashboard
+        </button>
       </div>
     );
   }
@@ -288,12 +357,34 @@ function QuizPage() {
             >
               Go to Homepage
             </button>
-            <button
-              onClick={() => claimReward()}
-              className="bg-green-500 hover:bg-green-400 text-white font-semibold py-3 px-4 rounded-xl text-lg transition-all shadow-md transform hover:scale-105"
-            >
-              Claim Reward
-            </button>
+            {showScore && !mintSuccess && (
+              <button
+                className="mt-6 bg-green-600 hover:bg-green-500 text-white font-semibold py-3 px-4 rounded-xl text-lg transition-all shadow-md transform hover:scale-105"
+                onClick={() =>
+                  claimReward(
+                    "https://your-token-uri.com/" + walletAddress + "-" + score
+                  )
+                }
+                disabled={minting}
+              >
+                {minting ? "Claiming..." : "Claim Reward"}
+              </button>
+            )}
+            {mintSuccess && (
+              <div className="mt-6 text-green-400">
+                Reward claimed!
+                <br />
+                <a
+                  href={`https://alfajores.celoscan.io/tx/${transactionHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline text-blue-300"
+                >
+                  View Transaction
+                </a>
+              </div>
+            )}
+            {mintError && <div className="mt-4 text-red-400">{mintError}</div>}
           </div>
         </div>
       ) : (
@@ -314,7 +405,7 @@ function QuizPage() {
                       : "bg-red-500"
                     : "bg-gray-800 hover:bg-gray-700 text-white"
                 }`}
-                disabled={selectedAnswer !== null}
+                disabled={selectedAnswer !== null} // Disable all buttons after one is selected
               >
                 {option.answerText}
               </button>

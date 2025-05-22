@@ -11,7 +11,7 @@ contract QuizReward is ERC721URIStorage, Ownable {
         tokenCounter = 0;
     }
 
-    function mintReward(address recipient, string memory tokenURI) public onlyOwner {
+    function mintReward(address recipient, string memory tokenURI) public {
         uint256 newTokenId = tokenCounter;
         _safeMint(recipient, newTokenId);
         _setTokenURI(newTokenId, tokenURI);

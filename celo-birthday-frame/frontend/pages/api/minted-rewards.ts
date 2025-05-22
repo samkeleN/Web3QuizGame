@@ -26,8 +26,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         let score = null;
         try {
           tokenURI = await contract.tokenURI(tokenId);
-          // Parse score from tokenURI if it matches /metadata/{score}
-          const match = tokenURI.match(/metadata\/(\d+)/);
+          console.log(`TokenId: ${tokenId}, TokenURI: ${tokenURI}`); // DEBUG
+   let match = tokenURI.match(/metadata\/(\d+)/);
+          if (!match) {
+            match = tokenURI.match(/-(\d+)$/);
+          }
           if (match) {
             score = parseInt(match[1], 10);
           }

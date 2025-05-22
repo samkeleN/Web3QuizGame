@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "@farcaster/auth-kit/styles.css";
-import "./globals.css";
 import { Providers } from "./providers";
 import { headers } from "next/headers";
+import "./globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Self Happy Birthday",
+  title: "Quiz Game",
   description: "Happy Birthday!",
 };
 
@@ -31,7 +31,8 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel="preload" href="/globals.css" as="style" />
+        {/* Remove the preload for globals.css to avoid hydration mismatch */}
+        {/* <link rel="preload" href="./globals.css" as="style" /> */}
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

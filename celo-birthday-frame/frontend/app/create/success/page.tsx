@@ -57,6 +57,17 @@ export default function SuccessPage() {
     }
   }, [address])
 
+  const [loading, setLoading] = useState(false);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mb-6"></div>
+        <span className="text-white text-xl font-semibold">Loading...</span>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#2D0C72] px-6 py-10 overflow-hidden">
       <div className="container mx-auto max-w-2xl px-4 py-8 text-center flex flex-col items-center justify-start">

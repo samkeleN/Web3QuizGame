@@ -18,6 +18,26 @@ function DashboardPage() {
     }>
   >([]);
   const [error, setError] = useState<string | null>(null);
+  const [address, setAddress] = useState<string | null>(null); // Add state for user address
+
+  // Try to detect wallet address from window.ethereum (MetaMask/Celo Extension Wallet)
+  useEffect(() => {
+    async function detectAddress() {
+      if (typeof window !== "undefined" && (window as any).ethereum) {
+        try {
+          const accounts = await (window as any).ethereum.request({
+            method: "eth_accounts",
+          });
+          if (accounts && accounts.length > 0) {
+            setAddress(accounts[0]);
+          }
+        } catch (err) {
+          // Ignore errors
+        }
+      }
+    }
+    detectAddress();
+  }, []);
 
   // Update the API call to fetch and display actual user quizzes
   useEffect(() => {
@@ -53,8 +73,16 @@ function DashboardPage() {
         // Use absolute path to avoid 404 in nested routes
         const res = await fetch("/api/minted-rewards");
         const data = await res.json();
+        console.log("minted-rewards API data:", data); // DEBUG: log API response
         if (data.rewards) {
-          setMintedRewards(data.rewards);
+          // Only show tokens for the connected wallet address
+          const filtered = address
+            ? data.rewards.filter(
+                (reward: any) =>
+                  reward.address?.toLowerCase() === address.toLowerCase()
+              )
+            : [];
+          setMintedRewards(filtered);
         } else {
           setMintedRewards([]);
         }
@@ -66,11 +94,20 @@ function DashboardPage() {
       }
     }
     fetchMintedRewards();
-  }, []);
+  }, [address]);
 
   function truncateAddress(address: string) {
     if (!address) return "-";
     return address.slice(0, 6) + "..." + address.slice(-4);
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#2D0C72] w-full">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mb-6"></div>
+        <span className="text-white text-xl font-semibold">Loading...</span>
+      </div>
+    );
   }
 
   return (
@@ -86,6 +123,25 @@ function DashboardPage() {
       </div>
       <div className="bg-gray-800 rounded-xl p-6 w-full max-w-xl">
         <h2 className="text-xl font-semibold mb-4">Minted Quiz Rewards</h2>
+        {/* Filtered by Token Holder */}
+        <div className="mb-2 flex items-center text-sm text-gray-300">
+          <span className="font-semibold mr-2">Filtered by Token Holder:</span>
+          {address ? (
+            <span
+              className="font-mono bg-gray-700 px-2 py-1 rounded text-green-300"
+              title={address}
+            >
+              {truncateAddress(address)}
+            </span>
+          ) : (
+            <span className="text-yellow-300">No wallet connected</span>
+          )}
+        </div>
+        <div className="mb-4 text-xs text-gray-400">
+          {address
+            ? "Only tokens minted to your connected wallet are shown."
+            : "Connect your wallet to view your minted rewards."}
+        </div>
         {loading ? (
           <div>Loading minted rewards...</div>
         ) : error ? (
@@ -96,18 +152,15 @@ function DashboardPage() {
           <table className="w-full text-left">
             <thead>
               <tr>
-                <th className="py-2 px-4">Recipient Address</th>
                 <th className="py-2 px-4">Token ID</th>
                 <th className="py-2 px-4">Token URI</th>
                 <th className="py-2 px-4">Score</th>
+                <th className="py-2 px-4">Transaction</th>
               </tr>
             </thead>
             <tbody>
               {mintedRewards.map((reward, idx) => (
                 <tr key={idx} className="border-t border-gray-700">
-                  <td className="py-2 px-4 font-mono text-green-300">
-                    {truncateAddress(reward.address)}
-                  </td>
                   <td className="py-2 px-4 font-mono text-yellow-300">
                     {reward.tokenId}
                   </td>
@@ -122,9 +175,41 @@ function DashboardPage() {
                       : reward.tokenURI || "-"}
                   </td>
                   <td className="py-2 px-4 font-mono text-pink-300">
-                    {typeof reward.score === "number" && !isNaN(reward.score)
-                      ? reward.score
-                      : "-"}
+                    {typeof reward.score !== "undefined"
+                      ? reward.score !== null && !isNaN(Number(reward.score))
+                        ? reward.score
+                        : "-"
+                      : (() => {
+                          // Fallback: Try to extract score from tokenURI if score is undefined (should not happen)
+                          try {
+                            const uri = reward.tokenURI;
+                            if (uri && uri.includes("score=")) {
+                              const match = uri.match(/score=(\d+)/);
+                              if (match) return match[1];
+                            }
+                            if (
+                              uri &&
+                              uri.startsWith("data:application/json")
+                            ) {
+                              const json = JSON.parse(atob(uri.split(",")[1]));
+                              if (json.score) return json.score;
+                            }
+                          } catch {}
+                          return "-";
+                        })()}
+                  </td>
+                  <td className="py-2 px-4">
+                    <button
+                      className="bg-green-600 hover:bg-green-500 text-white font-semibold py-1 px-3 rounded transition-all shadow-md"
+                      onClick={() =>
+                        window.open(
+                          `https://alfajores.celoscan.io/token/${QuizRewardAddress}?a=${reward.tokenId}`,
+                          "_blank"
+                        )
+                      }
+                    >
+                      View Tx
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -133,10 +218,15 @@ function DashboardPage() {
         )}
       </div>
       <button
-        onClick={() => (window.location.href = "/verify")}
+        onClick={() => {
+          setLoading(true);
+          setTimeout(() => {
+            window.location.href = "/verify";
+          }, 500); // short delay for loading effect
+        }}
         className="mt-6 bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 px-4 rounded-xl text-lg transition-all shadow-md transform hover:scale-105"
       >
-        Back to Verify
+        {loading ? "Loading..." : "Back"}
       </button>
     </div>
   );

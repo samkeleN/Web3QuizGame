@@ -1,4 +1,4 @@
-export const ContractAddress = "0x503028d1F0c7a55D49C872745bB99dAc084f959C";
+export const ContractAddress = "0x968D1eb07ba1bA5ed8bF9D7B83096f42fCeeBbC8";
 
 export const ContractAbi = [
   {
@@ -702,7 +702,8 @@ export const IERC20Abi = [
 ];
 
 // Update this address to your deployed QuizReward contract address
-export const QuizRewardAddress = "0x75773973192c90075eB87A271A601b2468732411";
+
+export const QuizRewardAddress = "0x968D1eb07ba1bA5ed8bF9D7B83096f42fCeeBbC8";
 
 // Update this ABI to match your deployed QuizReward contract
 export const QuizRewardABI = [
