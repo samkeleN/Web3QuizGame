@@ -26,7 +26,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         let score = null;
         try {
           tokenURI = await contract.tokenURI(tokenId);
-          console.log(`TokenId: ${tokenId}, TokenURI: ${tokenURI}`); // DEBUG
    let match = tokenURI.match(/metadata\/(\d+)/);
           if (!match) {
             match = tokenURI.match(/-(\d+)$/);
