@@ -32,8 +32,8 @@ const IPFS_CIDS: Record<string, string> = {
 
 function getImageUrl(difficulty: string, score: number) {
   const cid = IPFS_CIDS[difficulty];
-  // Use your custom domain for the image URL
-  return `https://your-token-uri.com/${cid}/${score}.png`;
+  // Use ngrok URL for the image URL
+  return `https://cdd7-41-203-62-54.ngrok-free.app/${cid}/${score}.png`;
 }
 
 function generateMetadata(difficulty: string, score: number) {
@@ -72,8 +72,8 @@ export default async function handler(req: any, res: any) {
       const metadata = generateMetadata(difficulty, score);
       // 2. Upload metadata to Pinata
       const cid = await uploadJSONToPinata(metadata);
-      // Use your custom domain for the tokenURI
-      const tokenURI = `https://your-token-uri.com/${cid}/metadata.json`;
+      // Use ngrok URL for the tokenURI
+      const tokenURI = `https://cdd7-41-203-62-54.ngrok-free.app/${cid}/metadata.json`;
       // 3. Mint NFT with tokenURI
       const quizRewardContract = await getQuizRewardContract();
       const txResult = await quizRewardContract.mintReward(walletAddress, tokenURI);

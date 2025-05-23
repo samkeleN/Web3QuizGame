@@ -183,7 +183,6 @@ function DashboardPage() {
             <thead>
               <tr>
                 <th className="py-2 px-4">Token ID</th>
-                <th className="py-2 px-4">Preview</th>
                 <th className="py-2 px-4">Score</th>
                 <th className="py-2 px-4">Transaction</th>
               </tr>
@@ -219,17 +218,6 @@ function DashboardPage() {
                   <tr key={idx} className="border-t border-gray-700">
                     <td className="py-2 px-4 font-mono text-yellow-300">
                       {reward.tokenId}
-                    </td>
-                    <td className="py-2 px-4">
-                      {imageMap[reward.tokenId] ? (
-                        <img
-                          src={imageMap[reward.tokenId]}
-                          alt="NFT Preview"
-                          className="w-16 h-16 object-cover rounded shadow border border-gray-700"
-                        />
-                      ) : (
-                        <span className="text-gray-500">No image</span>
-                      )}
                     </td>
                     <td className="py-2 px-4 font-mono text-pink-300">
                       {typeof reward.score !== "undefined"
