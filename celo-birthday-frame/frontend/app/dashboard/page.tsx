@@ -19,6 +19,8 @@ function DashboardPage() {
   >([]);
   const [error, setError] = useState<string | null>(null);
   const [address, setAddress] = useState<string | null>(null); // Add state for user address
+  const [metadataMap, setMetadataMap] = useState<Record<string, any>>({});
+  const [imageMap, setImageMap] = useState<Record<string, string>>({});
 
   // Try to detect wallet address from window.ethereum (MetaMask/Celo Extension Wallet)
   useEffect(() => {
@@ -96,6 +98,34 @@ function DashboardPage() {
     fetchMintedRewards();
   }, [address]);
 
+  // Fetch metadata for each minted reward
+  useEffect(() => {
+    async function fetchAllMetadata() {
+      const newMetadataMap: Record<string, any> = {};
+      const newImageMap: Record<string, string> = {};
+      await Promise.all(
+        mintedRewards.map(async (reward) => {
+          if (reward.tokenURI && reward.tokenURI.startsWith("http")) {
+            try {
+              const res = await fetch(reward.tokenURI);
+              if (res.ok) {
+                const metadata = await res.json();
+                newMetadataMap[reward.tokenId] = metadata;
+                if (metadata.image)
+                  newImageMap[reward.tokenId] = metadata.image;
+              }
+            } catch (e) {
+              // Ignore fetch errors
+            }
+          }
+        })
+      );
+      setMetadataMap(newMetadataMap);
+      setImageMap(newImageMap);
+    }
+    if (mintedRewards.length > 0) fetchAllMetadata();
+  }, [mintedRewards]);
+
   function truncateAddress(address: string) {
     if (!address) return "-";
     return address.slice(0, 6) + "..." + address.slice(-4);
@@ -153,66 +183,79 @@ function DashboardPage() {
             <thead>
               <tr>
                 <th className="py-2 px-4">Token ID</th>
-                <th className="py-2 px-4">Token URI</th>
+                <th className="py-2 px-4">Preview</th>
                 <th className="py-2 px-4">Score</th>
                 <th className="py-2 px-4">Transaction</th>
               </tr>
             </thead>
             <tbody>
-              {mintedRewards.map((reward, idx) => (
-                <tr key={idx} className="border-t border-gray-700">
-                  <td className="py-2 px-4 font-mono text-yellow-300">
-                    {reward.tokenId}
-                  </td>
-                  <td
-                    className="py-2 px-4 break-all text-blue-300"
-                    title={reward.tokenURI}
-                  >
-                    {reward.tokenURI && reward.tokenURI.length > 32
-                      ? reward.tokenURI.slice(0, 16) +
-                        "..." +
-                        reward.tokenURI.slice(-8)
-                      : reward.tokenURI || "-"}
-                  </td>
-                  <td className="py-2 px-4 font-mono text-pink-300">
-                    {typeof reward.score !== "undefined"
-                      ? reward.score !== null && !isNaN(Number(reward.score))
-                        ? reward.score
-                        : "-"
-                      : (() => {
-                          // Fallback: Try to extract score from tokenURI if score is undefined (should not happen)
-                          try {
-                            const uri = reward.tokenURI;
-                            if (uri && uri.includes("score=")) {
-                              const match = uri.match(/score=(\d+)/);
-                              if (match) return match[1];
-                            }
-                            if (
-                              uri &&
-                              uri.startsWith("data:application/json")
-                            ) {
-                              const json = JSON.parse(atob(uri.split(",")[1]));
-                              if (json.score) return json.score;
-                            }
-                          } catch {}
-                          return "-";
-                        })()}
-                  </td>
-                  <td className="py-2 px-4">
-                    <button
-                      className="bg-green-600 hover:bg-green-500 text-white font-semibold py-1 px-3 rounded transition-all shadow-md"
-                      onClick={() =>
-                        window.open(
-                          `https://alfajores.celoscan.io/token/${QuizRewardAddress}?a=${reward.tokenId}`,
-                          "_blank"
-                        )
+              {mintedRewards.map((reward, idx) => {
+                // Compose short URL for display: https://your-tok...6D16d-10
+                let shortUrl = reward.tokenURI;
+                if (reward.tokenURI && reward.tokenURI.startsWith("http")) {
+                  try {
+                    const url = new URL(reward.tokenURI);
+                    // If Pinata gateway, show as your-token-uri.com/CID/tokenId.json
+                    if (url.hostname.includes("pinata.cloud")) {
+                      // Extract CID and filename
+                      const pathParts = url.pathname.split("/").filter(Boolean);
+                      // pathParts[0] = 'ipfs', pathParts[1] = CID, pathParts[2] = filename
+                      if (pathParts.length >= 2) {
+                        const cid = pathParts[1];
+                        const file = pathParts.slice(2).join("/");
+                        shortUrl = `your-token-uri.com/${cid}/${file}`;
                       }
-                    >
-                      View Tx
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                    } else {
+                      // fallback: show host...last8
+                      const host = url.hostname;
+                      const path = url.pathname;
+                      shortUrl = `https://${host.slice(0, 8)}...${host.slice(
+                        -5
+                      )}${path.slice(-8)}`;
+                    }
+                  } catch {}
+                }
+                return (
+                  <tr key={idx} className="border-t border-gray-700">
+                    <td className="py-2 px-4 font-mono text-yellow-300">
+                      {reward.tokenId}
+                    </td>
+                    <td className="py-2 px-4">
+                      {imageMap[reward.tokenId] ? (
+                        <img
+                          src={imageMap[reward.tokenId]}
+                          alt="NFT Preview"
+                          className="w-16 h-16 object-cover rounded shadow border border-gray-700"
+                        />
+                      ) : (
+                        <span className="text-gray-500">No image</span>
+                      )}
+                    </td>
+                    <td className="py-2 px-4 font-mono text-pink-300">
+                      {typeof reward.score !== "undefined"
+                        ? reward.score !== null && !isNaN(Number(reward.score))
+                          ? reward.score
+                          : "-"
+                        : metadataMap[reward.tokenId]?.attributes?.find(
+                            (a: any) => a.trait_type === "Score"
+                          )?.value || "-"}
+                    </td>
+                    <td className="py-2 px-4">
+                      <button
+                        className="bg-green-600 hover:bg-green-500 text-white font-semibold py-1 px-3 rounded transition-all shadow-md"
+                        onClick={() =>
+                          window.open(
+                            `https://alfajores.celoscan.io/token/${QuizRewardAddress}?a=${reward.tokenId}`,
+                            "_blank"
+                          )
+                        }
+                      >
+                        View Tx
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}
