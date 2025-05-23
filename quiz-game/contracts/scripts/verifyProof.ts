@@ -33,7 +33,7 @@ async function main() {
 
   const scope = hashEndpointWithScope(
     "https://celo-farcaster-frames-six.vercel.app/api/verify",
-    "Celo-Birthday-Frame"
+    "Quiz-Game"
   );
   const attestationId = 1n;
   const olderThanEnabled = false;

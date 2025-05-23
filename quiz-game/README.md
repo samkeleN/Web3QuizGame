@@ -1,3 +1,5 @@
+# Quiz Game
+
 ## Resolving Dependency Conflicts
 
 If you encounter a dependency conflict error during `npm install`, you can bypass peer dependency issues by using the following command:

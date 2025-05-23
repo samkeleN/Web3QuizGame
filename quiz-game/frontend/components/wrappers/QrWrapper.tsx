@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import SelfQRcodeWrapper, { SelfApp, SelfAppBuilder } from '@selfxyz/qrcode';
-import { logo } from '../../data/birthdayAppLogo';
-import { useRouter } from 'next/navigation';
+import SelfQRcodeWrapper, { SelfApp, SelfAppBuilder } from "@selfxyz/qrcode";
+import { logo } from "../../data/birthdayAppLogo";
+import { useRouter } from "next/navigation";
 
 export default function QrWrapper({ address }: { address: string }) {
   const router = useRouter();
   const selfApp = new SelfAppBuilder({
     appName: "Celo Birthday Frame",
-    scope: "Celo-Birthday-Frame",
+    scope: "Quiz-Game",
     // endpoint: "https://happy-birthday-rho-nine.vercel.app/api/verify",
     // run `ngrok http 3000` and copy the url here to test locally
     endpoint: "https://celo-farcaster-frames-six.vercel.app/api/verify",
@@ -17,16 +17,16 @@ export default function QrWrapper({ address }: { address: string }) {
     userIdType: "hex",
     disclosures: {
       date_of_birth: true,
-      name: true
+      name: true,
     },
     devMode: true,
   } as Partial<SelfApp>).build();
 
   const handleSuccess = async () => {
-    console.log('Verification successful');
+    console.log("Verification successful");
     setTimeout(() => {
-      router.push(`/create`)
-    }, 3000)
+      router.push(`/create`);
+    }, 3000);
   };
 
   return (
@@ -35,7 +35,7 @@ export default function QrWrapper({ address }: { address: string }) {
         <div className="flex flex-col items-center gap-4 mb-6">
           <SelfQRcodeWrapper
             selfApp={selfApp}
-            type='websocket'
+            type="websocket"
             onSuccess={handleSuccess}
           />
           <p className="text-lg font-medium text-white">
