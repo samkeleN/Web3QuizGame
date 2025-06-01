@@ -10,8 +10,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       <!DOCTYPE html>
       <html lang="en">
       <head>
-        <meta property="og:title" content="Celo Quiz: Win an NFT!" />
-        <meta property="og:description" content="Take the quiz and claim your Celo NFT reward based on your score!" />
+        <meta property="og:title" content="Quiz Game: Win an NFT!" />
+        <meta property="og:description" content="Take the quiz and claim your NFT reward!" />
         <meta property="og:image" content="https://your-domain.com/quiz.png" />
         <meta property="fc:frame" content="vNext" />
         <meta property="fc:frame:image" content="https://your-domain.com/quiz.png" />
@@ -26,20 +26,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   // POST: handle frame actions (e.g., quiz answer, mint)
   if (req.method === "POST") {
-    // You can parse req.body for user actions and respond with next frame step
-    // For demo, just return a static frame
+    // For demo, show first quiz question (static)
     res.setHeader("Content-Type", "text/html");
     res.status(200).send(`
       <!DOCTYPE html>
       <html lang="en">
       <head>
-        <meta property="og:title" content="Quiz Started!" />
-        <meta property="og:description" content="Answer the questions to win your NFT!" />
+        <meta property="og:title" content="Quiz Question 1" />
+        <meta property="og:description" content="What is the capital of France?" />
         <meta property="og:image" content="https://your-domain.com/quiz.png" />
         <meta property="fc:frame" content="vNext" />
         <meta property="fc:frame:image" content="https://your-domain.com/quiz.png" />
-        <meta property="fc:frame:button:1" content="Go to Quiz" />
-        <meta property="fc:frame:post_url" content="https://your-domain.com/quiz" />
+        <meta property="fc:frame:button:1" content="Paris" />
+        <meta property="fc:frame:button:2" content="Berlin" />
+        <meta property="fc:frame:button:3" content="Madrid" />
+        <meta property="fc:frame:button:4" content="Lisbon" />
+        <meta property="fc:frame:post_url" content="https://your-domain.com/api/frame/quiz" />
       </head>
       <body></body>
       </html>
