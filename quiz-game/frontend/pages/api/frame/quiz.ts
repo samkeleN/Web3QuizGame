@@ -12,11 +12,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       <head>
         <meta property="og:title" content="Quiz Game: Win an NFT!" />
         <meta property="og:description" content="Take the quiz and claim your NFT reward!" />
-        <meta property="og:image" content="https://your-domain.com/quiz.png" />
+        <meta property="og:image" content="https://quiz-game-ten-eta.vercel.app/quiz.png" />
         <meta property="fc:frame" content="vNext" />
-        <meta property="fc:frame:image" content="https://your-domain.com/quiz.png" />
+        <meta property="fc:frame:image" content="https://quiz-game-ten-eta.vercel.app/quiz.png" />
         <meta property="fc:frame:button:1" content="Start Quiz" />
-        <meta property="fc:frame:post_url" content="https://your-domain.com/api/frame/quiz" />
+        <meta property="fc:frame:post_url" content="https://quiz-game-ten-eta.vercel.app/api/frame/quiz" />
       </head>
       <body></body>
       </html>
@@ -34,14 +34,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       <head>
         <meta property="og:title" content="Quiz Question 1" />
         <meta property="og:description" content="What is the capital of France?" />
-        <meta property="og:image" content="https://your-domain.com/quiz.png" />
+        <meta property="og:image" content="https://quiz-game-ten-eta.vercel.app/quiz.png" />
         <meta property="fc:frame" content="vNext" />
-        <meta property="fc:frame:image" content="https://your-domain.com/quiz.png" />
+        <meta property="fc:frame:image" content="https://quiz-game-ten-eta.vercel.app/quiz.png" />
         <meta property="fc:frame:button:1" content="Paris" />
         <meta property="fc:frame:button:2" content="Berlin" />
         <meta property="fc:frame:button:3" content="Madrid" />
         <meta property="fc:frame:button:4" content="Lisbon" />
-        <meta property="fc:frame:post_url" content="https://your-domain.com/api/frame/quiz" />
+        <meta property="fc:frame:post_url" content="https://quiz-game-ten-eta.vercel.app/api/frame/quiz" />
       </head>
       <body></body>
       </html>
