@@ -1,5 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import getFrameHtml from "@farcaster/frame-sdk";
 
 // Farcaster Frame endpoint for quiz app
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -44,3 +43,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   res.status(405).end();
 }
+function getFrameHtml(arg0: { title: string; description: string; image: string; frame: string; frameImage: string; buttons: { label: string; }[]; postUrl: string; }) {
+  throw new Error("Function not implemented.");
+}
+
